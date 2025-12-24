@@ -1,7 +1,7 @@
 # TypeScript Monorepo Starter
 
-[![Node.js](https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg)](https://nodejs.org/)
-[![pnpm](https://img.shields.io/badge/pnpm-8.15.4-orange.svg)](https://pnpm.io/)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D24-brightgreen.svg)](https://nodejs.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-10.26.2-orange.svg)](https://pnpm.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A modern TypeScript monorepo starter template with best practices for scalable projects.
@@ -10,9 +10,11 @@ A modern TypeScript monorepo starter template with best practices for scalable p
 
 - 📦 [PNPM](https://pnpm.io/) for fast, disk-efficient package management
 - 🏎️ [Turborepo](https://turbo.build/repo) for high-performance build system
+- 📦 [tsup](https://tsup.egoist.dev/) for fast, zero-config bundling with TypeScript support
 - 🔍 [Biome](https://biomejs.dev/) for fast linting and formatting
 - ⚙️ [TypeScript](https://www.typescriptlang.org/) configured with modern Node LTS settings
 - 🧪 [Vitest](https://vitest.dev/) for unit testing
+- ⚡ [Volta](https://volta.sh/) for Node.js and package manager version management
 - 📝 [Commitlint](https://commitlint.js.org/) with Conventional Commits
 - 🔄 [Changesets](https://github.com/changesets/changesets) for versioning and changelogs
 - 🚀 GitHub Actions for CI/CD with npm publishing
@@ -34,6 +36,7 @@ ts-monorepo/
 ├── package.json         # Root package.json
 ├── pnpm-workspace.yaml  # PNPM workspace config
 ├── tsconfig.json        # Base TypeScript config
+├── tsup.config.ts       # tsup build configuration
 ├── turbo.json           # Turborepo config
 └── vitest.config.ts     # Vitest config
 ```
@@ -42,8 +45,8 @@ ts-monorepo/
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v22 LTS or higher)
-- [PNPM](https://pnpm.io/) (v8 or higher)
+- [Volta](https://volta.sh/) for Node.js and pnpm version management (recommended)
+  - Or [Node.js](https://nodejs.org/) (v24 LTS or higher) and [PNPM](https://pnpm.io/) (v10 or higher)
 
 ### Installation
 
@@ -53,12 +56,22 @@ ts-monorepo/
    cd ts-monorepo
    ```
 
-2. Install dependencies
+2. Install Node.js and pnpm (if using Volta, this happens automatically)
+   ```bash
+   # With Volta (recommended)
+   volta install node@24.12.0 pnpm@10.26.2
+
+   # Or install manually
+   # Install Node.js 24+ from https://nodejs.org
+   # Install pnpm: npm install -g pnpm
+   ```
+
+3. Install dependencies
    ```bash
    pnpm install
    ```
 
-3. Build all packages
+4. Build all packages
    ```bash
    pnpm build
    ```
@@ -87,13 +100,24 @@ pnpm format
 
 #### Building
 
+This template uses [tsup](https://tsup.egoist.dev/) for fast, zero-config bundling with TypeScript support. All packages are built as ESM modules.
+
 ```bash
 # Build all packages
 pnpm build
 
 # Build a specific package
 pnpm -F "@monorepo/core" build
+
+# Watch mode for development
+pnpm -F "@monorepo/core" dev
 ```
+
+**Build Configuration:**
+- **Output**: ESM modules (`dist/index.js`)
+- **Types**: Generated automatically (`dist/index.d.ts`)
+- **Source maps**: Included for debugging
+- **Tree shaking**: Enabled for optimal bundle size
 
 ### Making Changes
 
