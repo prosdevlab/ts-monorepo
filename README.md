@@ -33,7 +33,8 @@ ts-monorepo/
 │   ├── core/            # Core package
 │   ├── utils/           # Utilities package
 │   ├── feature-a/       # Feature package
-│   └── browser-example/ # Browser library example (script tag + ES module)
+│   ├── browser-example/ # Browser library example (script tag + ES module)
+│   └── cli-example/     # Command-line package example (bin, Node target)
 ├── biome.json           # Biome configuration
 ├── commitlint.config.js # Commitlint configuration
 ├── package.json         # Root package.json
@@ -206,6 +207,22 @@ pnpm exec playwright install chromium
 pnpm build
 pnpm test:browser
 pnpm size
+```
+
+### Command-Line Packages
+
+`packages/cli-example` shows the setup for a package people run as a command (`npx your-tool`). Copy it as a starting point.
+
+- **A `bin` entry** in `package.json` points at `dist/cli.js`. The source starts with `#!/usr/bin/env node`; tsup keeps that line and marks the built file executable.
+- **Node build target** (`tsup.config.ts`): `platform: 'node'`, `target: 'node24'`, ES module output.
+- **Logic separate from the process.** `src/index.ts` exports `run(argv, io)`, which returns an exit code instead of exiting, so it is unit-tested directly. `src/cli.ts` is the two-line entry point that calls it.
+- **No argument-parsing dependency:** Node's built-in `util.parseArgs`, with unknown options reported as errors (exit 2) instead of crashes.
+- **A test of the built command** (`test/bin.test.ts`) runs `dist/cli.js` the way a user would: shebang, executable bit, output, exit codes. It fails with a clear message if you haven't built first.
+
+```bash
+pnpm build
+node packages/cli-example/dist/cli.js greet --name you
+pnpm test
 ```
 
 ## Versioning

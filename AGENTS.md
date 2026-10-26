@@ -25,7 +25,8 @@ packages/
 ├── core/          # Core package with tests
 ├── utils/         # Utilities (depends on core)
 ├── feature-a/     # Feature package (depends on core and utils)
-└── browser-example/ # Browser library: ES module + script-tag build, e2e tests, size budget
+├── browser-example/ # Browser library: ES module + script-tag build, e2e tests, size budget
+└── cli-example/     # Command-line package: bin entry, Node target, test that runs the built command
 ```
 
 Each package has its own `package.json`, `tsconfig.json`, and `src/` directory. All packages are currently marked as `"private": true`.
@@ -93,7 +94,7 @@ Tests use Vitest with a centralized configuration at the root (`vitest.config.ts
 - Test files: `**/*.test.ts` or `**/*.spec.ts` in `packages/*/src/`
 - Run from root: `pnpm test` (NOT `turbo test`)
 - The test script in root package.json runs `vitest run`, not `turbo test`
-- Only `@monorepo/core` currently has tests (`packages/core/src/index.test.ts`)
+- Unit tests live next to source (`packages/*/src/*.test.ts`); `packages/cli-example/test/bin.test.ts` runs the *built* command, so `pnpm build` must run before `pnpm test`
 
 **When adding tests:**
 
