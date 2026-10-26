@@ -246,6 +246,9 @@ pnpm list --depth 0  # See all workspace packages
 - NPM_TOKEN is stored as GitHub secret (not in code)
 - All packages default to private to prevent accidental publishing
 - Review dependencies regularly: `pnpm audit`
+- Nothing newer than 14 days installs: `minimumReleaseAge` in `pnpm-workspace.yaml`. Don't bypass it with
+  `minimumReleaseAgeExclude` to get a just-released version; wait for it to age.
+- Renovate (`renovate.json`) proposes updates once they're 14 days old and keeps GitHub Actions pinned to commit SHAs
 
 ## Versioning Strategy
 

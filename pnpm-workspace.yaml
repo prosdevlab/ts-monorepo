@@ -1,2 +1,5 @@
 packages:
   - 'packages/*'
+
+# Install only versions published at least 14 days ago (minutes), transitive dependencies included.
+minimumReleaseAge: 20160

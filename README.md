@@ -225,6 +225,15 @@ node packages/cli-example/dist/cli.js greet --name you
 pnpm test
 ```
 
+### Dependency Updates
+
+Every dependency is pinned to an exact version, and nothing newer than **14 days** is installed. Freshly published releases are where compromised packages tend to land; waiting gives the ecosystem time to catch them.
+
+- **pnpm enforces it on every install** (`minimumReleaseAge` in `pnpm-workspace.yaml`), including transitive dependencies. A version that is too new fails to install, with a message naming the setting.
+- **Renovate proposes the updates** (`renovate.json`): weekly, only once a release is 14 days old, grouped into one PR for GitHub Actions and one for dev tools. It also keeps the GitHub Actions pinned to exact commits and refreshes the lockfile weekly.
+
+To turn Renovate on, install the [Renovate GitHub App](https://github.com/apps/renovate) for the repository. Its first PR is an onboarding check you merge to start.
+
 ## Versioning
 
 This template follows [Semantic Versioning](https://semver.org/) at the repository level:
