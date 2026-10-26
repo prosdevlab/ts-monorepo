@@ -225,6 +225,15 @@ node packages/cli-example/dist/cli.js greet --name you
 pnpm test
 ```
 
+### Package Checks
+
+`pnpm check:packages` packs every package the way it would be published and checks the result. CI runs it on every push.
+
+- **[publint](https://publint.dev)** checks the package layout: that `exports`, `types` and `bin` point at files that exist in the tarball, and that nothing unneeded ships.
+- **[Are The Types Wrong](https://arethetypeswrong.github.io)** checks that the types resolve for each way someone can import the package (Node ES modules and bundlers; the packages are ESM-only, so CommonJS resolution is not required).
+
+Every package lists `"files": ["dist"]`. Without it, what ships depends on the tool: `npm pack` follows `.gitignore` and leaves out `dist/`, while `pnpm pack` includes it along with build logs and caches.
+
 ### Dependency Updates
 
 Every dependency is pinned to an exact version, and nothing newer than **14 days** is installed. Freshly published releases are where compromised packages tend to land; waiting gives the ecosystem time to catch them.

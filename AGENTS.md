@@ -58,6 +58,9 @@ pnpm test:browser
 # Size budgets for browser builds (run after build)
 pnpm size
 
+# Pack each package as it would publish and check layout and types (publint, attw)
+pnpm check:packages
+
 # Clean all build outputs
 pnpm clean
 ```
@@ -139,7 +142,7 @@ chore: update dependencies
 
 ## Adding a New Package
 
-1. Create directory: `packages/new-package/`
+1. Create directory: `packages/new-package/` (or copy an example package; keep `"files": ["dist"]` and the `check:package` script)
 2. Add `package.json`:
    ```json
    {

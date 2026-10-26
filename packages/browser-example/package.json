@@ -25,7 +25,8 @@
     "typecheck": "tsc --noEmit && tsc -p e2e/tsconfig.json",
     "lint": "biome lint ./src ./e2e",
     "format": "biome format --write ./src ./e2e",
-    "size": "size-limit"
+    "size": "size-limit",
+    "check:package": "publint --strict && attw --pack . --profile esm-only"
   },
   "size-limit": [
     {
