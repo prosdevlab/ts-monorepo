@@ -47,6 +47,55 @@ ts-monorepo/
 └── vitest.config.ts     # Vitest config
 ```
 
+## How It Fits Together
+
+### Packages and build order
+
+```
+  ┌──────────┐
+  │   core   │ ─────────────────────┐
+  └────┬─────┘                      │
+       ▼                            ▼
+  ┌──────────┐               ┌─────────────┐
+  │  utils   │ ────────────▶ │  feature-a  │
+  └──────────┘               └─────────────┘
+
+  browser-example     cli-example        no internal dependencies
+```
+
+An arrow points from a package to a package that depends on it. `pnpm build` builds `core`, then `utils`, then `feature-a` (Turborepo's `dependsOn: ["^build"]`); the standalone packages build alongside. Typecheck reads each dependency's built `dist/`, so build before typechecking. Unit tests import sources directly, through the aliases in `vitest.config.ts`.
+
+### What a build produces
+
+```
+every package
+  src/*.ts ──── tsc -p tsconfig.json ────▶ dist/*.js     ES modules, one per source file
+                                           dist/*.d.ts   types, with declaration maps
+
+browser-example, one more step
+  dist/index.js ──── Rollup + terser ────▶ dist/index.global.js  (minified, window.BrowserExample)
+
+cli-example, one more step
+  dist/cli.js ─────── chmod +x ──────────▶ executable command (keeps #!/usr/bin/env node)
+```
+
+### Where versions come from
+
+```
+package.json
+  devEngines.runtime   node 26.12.1 ──┬──▶ pnpm: downloads it and runs every script on it
+                                      ├──▶ setup-node (CI): installs the same version
+                                      ├──▶ npm and npx: refuse to run on any other version
+                                      └──▶ @types/node 26.x: same major (Renovate rule)
+  packageManager       pnpm@12.15.0 ──┬──▶ pnpm: switches itself to this version
+                                      └──▶ pnpm/action-setup (CI)
+
+pnpm-workspace.yaml
+  minimumReleaseAge    4320 (3 days) ◀──── must equal ────▶ renovate.json "3 days"
+```
+
+Each version is set in one place, and the tools on the right read it from there. Two pairs stay in step by other means: Renovate holds `@types/node` to the pinned Node major, and the two age settings are kept equal by hand.
+
 ## Getting Started
 
 ### Prerequisites
@@ -166,6 +215,20 @@ By default, all packages are `"private": true`, so the release workflow does not
 
 How a release runs (`.github/workflows/release.yml`), after CI passes on `main`, against the exact commit CI tested:
 
+```
+  merge to main ──▶ CI passes ──▶ select-mode                    contents: read
+                                       │
+                 ┌─────────────────────┴──────────────────────┐
+         changesets present                          version PR merged
+                 ▼                                             ▼
+              version                                        pack       contents: read
+     opens "version packages" PR                build, package checks, tarballs
+     contents, pull-requests: write                            ▼
+     (no npm access)                                        publish     environment: npm
+                                                  publishes the tarballs; never builds
+                                                  contents: write, id-token: write
+```
+
 1. **select-mode** reads the changesets: version, publish, or nothing.
 2. **version** (changesets present) opens or updates the "version packages" PR. It can write to the repository but cannot reach npm.
 3. **pack** (version PR merged) builds, runs the package checks, and packs tarballs, with read-only access.
@@ -235,6 +298,20 @@ Every package lists `"files": ["dist"]`. Without it, what ships depends on the t
 ### Dependency Updates
 
 Every dependency is pinned to an exact version, and nothing newer than **3 days** is installed. Freshly published releases are where compromised packages tend to land, and most are caught and pulled within hours to days; waiting means you never install them.
+
+```
+  new release on npm
+          │
+          ▼
+  younger than 3 days? ── yes ──▶ pnpm refuses it (ERR_PNPM_NO_MATURE_MATCHING_VERSION)
+          │ no
+          ▼
+  Renovate PR, Monday, grouped ──▶ CI runs every check ──▶ a person reviews and merges
+
+  urgent security fix, released today
+  advisory ──▶ a person approves ──▶ minimumReleaseAgeExclude: pkg@x.y.z ──▶ CI ──▶ merge
+                                       └── removed once x.y.z is 3 days old
+```
 
 - **pnpm enforces it on every install** (`minimumReleaseAge` in `pnpm-workspace.yaml`, in minutes), including transitive dependencies. `minimumReleaseAgeStrict: true` makes a version that is too new fail the install, with a message naming the setting, instead of falling back to it. pnpm 12 also rejects a misspelled setting, so a typo can't silently turn the rule off.
 - **Install scripts are opt-in** (`allowBuilds` in `pnpm-workspace.yaml`). pnpm fails the install when a dependency has a script nobody approved or denied.
