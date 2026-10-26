@@ -11,6 +11,9 @@
       "import": "./dist/index.js"
     }
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -19,7 +22,8 @@
     "lint": "biome lint ./src",
     "format": "biome format --write ./src",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "check:package": "publint --strict && attw --pack . --profile esm-only"
   },
   "devDependencies": {
     "tsup": "8.5.1",
