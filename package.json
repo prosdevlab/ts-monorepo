@@ -38,7 +38,7 @@
     "husky": "9.1.7",
     "publint": "0.3.25",
     "size-limit": "14.2.0",
-    "tsup": "8.5.1",
+    "tsup": "9.0.0",
     "turbo": "2.11.7",
     "typescript": "6.0.3",
     "vitest": "5.0.4"

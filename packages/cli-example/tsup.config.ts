@@ -6,8 +6,7 @@ export default defineConfig({
   format: ['esm'],
   platform: 'node',
   target: 'node24',
-  // tsup 8 adds baseUrl to its declaration build, which TypeScript 6 rejects; drop once on tsup 9.
-  dts: { entry: 'src/index.ts', compilerOptions: { ignoreDeprecations: '6.0' } },
+  dts: { entry: 'src/index.ts' },
   splitting: false,
   sourcemap: true,
   clean: true,

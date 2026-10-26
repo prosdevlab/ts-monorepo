@@ -6,8 +6,7 @@ export default defineConfig([
     entry: ['src/index.ts'],
     format: ['esm'],
     target: 'es2020',
-    // tsup 8 adds baseUrl to its declaration build, which TypeScript 6 rejects; drop once on tsup 9.
-    dts: { compilerOptions: { ignoreDeprecations: '6.0' } },
+    dts: true,
     sourcemap: true,
     clean: true,
     treeshake: true,
