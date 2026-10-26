@@ -8,7 +8,7 @@ A modern TypeScript monorepo using pnpm workspaces, Turborepo for build orchestr
 
 **Tech Stack:**
 
-- Package manager: pnpm 10.26.2 (pinned via `packageManager` and Volta)
+- Package manager: pnpm 10.34.8 (pinned via `packageManager` and Volta)
 - Language: TypeScript 6.0.3, with Node (`tsconfig.json`) and browser (`tsconfig.browser.json`) presets
 - Build system: Turborepo
 - Linter/Formatter: Biome
@@ -16,7 +16,7 @@ A modern TypeScript monorepo using pnpm workspaces, Turborepo for build orchestr
 - Size budgets: size-limit, per browser package
 - CI/CD: GitHub Actions (separate CI and Release workflows)
 - Versioning: Changesets
-- Node.js: >= 24 (LTS; Volta pins 24.12.0, and CI reads the same version from package.json)
+- Node.js: >= 24 (LTS; Volta pins 24.22.1, and CI reads the same version from package.json)
 
 ## Repository Structure
 
@@ -146,7 +146,7 @@ chore: update dependencies
 ### CI Workflow (`.github/workflows/ci.yml`)
 
 - Triggers: Push to main OR Pull Request to main
-- Node version: read from `package.json` (Volta pins 24.12.0)
+- Node version: read from `package.json` (Volta pins 24.22.1)
 - Steps: Install → Lint → Build → Typecheck → Test → Size budget → Package checks → Browser tests
 - Least-privilege `permissions`; every action pinned to a commit SHA with the version in a comment
 - **Important:** Build runs BEFORE typecheck (required for type definitions)
@@ -282,6 +282,8 @@ pnpm list --depth 0  # See all workspace packages
   fix, with the advisory linked, removed once it is 3 days old (README "Dependency Updates").
 - Renovate (`renovate.json`) proposes updates once they're 3 days old, labels security fixes `security`, and keeps
   GitHub Actions pinned to commit SHAs. Its `minimumReleaseAge` must equal pnpm's.
+- `@types/node` stays on the Node major Volta pins (a Renovate rule enforces it). Types for a newer Node let code
+  typecheck against APIs the pinned runtime doesn't have; upgrade Node and `@types/node` together.
 
 ## Versioning Strategy
 

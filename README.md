@@ -1,7 +1,7 @@
 # TypeScript Monorepo Starter
 
 [![Node.js](https://img.shields.io/badge/node-%3E%3D24-brightgreen.svg)](https://nodejs.org/)
-[![pnpm](https://img.shields.io/badge/pnpm-10.26.2-orange.svg)](https://pnpm.io/)
+[![pnpm](https://img.shields.io/badge/pnpm-10.34.8-orange.svg)](https://pnpm.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A modern TypeScript monorepo starter template with best practices for scalable projects.
@@ -66,7 +66,7 @@ ts-monorepo/
 2. Install Node.js and pnpm (if using Volta, this happens automatically)
    ```bash
    # With Volta (recommended)
-   volta install node@24.12.0 pnpm@10.26.2
+   volta install node@24.22.1 pnpm@10.34.8
 
    # Or install manually
    # Install Node.js 24+ from https://nodejs.org
@@ -239,7 +239,7 @@ Every package lists `"files": ["dist"]`. Without it, what ships depends on the t
 Every dependency is pinned to an exact version, and nothing newer than **3 days** is installed. Freshly published releases are where compromised packages tend to land, and most are caught and pulled within hours to days; waiting means you never install them.
 
 - **pnpm enforces it on every install** (`minimumReleaseAge` in `pnpm-workspace.yaml`, in minutes), including transitive dependencies. A version that is too new fails to install, with a message naming the setting.
-- **Renovate proposes the updates** (`renovate.json`): weekly, only once a release is 3 days old, grouped into one PR for GitHub Actions and one for dev tools. It also keeps the GitHub Actions pinned to exact commits and refreshes the lockfile weekly. Keep its `minimumReleaseAge` equal to pnpm's, or it opens PRs that pnpm refuses.
+- **Renovate proposes the updates** (`renovate.json`): weekly, only once a release is 3 days old, grouped into one PR for GitHub Actions and one for dev tools. It also keeps the GitHub Actions pinned to exact commits and refreshes the lockfile weekly. Keep its `minimumReleaseAge` equal to pnpm's, or it opens PRs that pnpm refuses. It keeps `@types/node` on the Node major that Volta pins; raise both together.
 
 **An urgent security fix released today.** The rule allows one exact version through, never a whole package:
 
