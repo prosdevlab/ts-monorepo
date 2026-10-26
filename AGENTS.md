@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This is a TypeScript monorepo starter template designed to be cloned and customized by developers.
+This is a TypeScript monorepo starter template: create a repository from it, then customize. `CLAUDE.md` imports this file, so these instructions are the single source for every agent.
 
 ## Project Overview
 
@@ -105,13 +105,30 @@ Tests use Vitest with a centralized configuration at the root (`vitest.config.ts
 2. Import from the source file: `import { MyClass } from './myModule'`
 3. Run `pnpm test` from root to verify
 
+## Before Calling Work Done
+
+Run the same sequence CI runs, in this order, and report any failure with its output:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm lint
+pnpm build
+pnpm typecheck
+pnpm test
+pnpm size
+pnpm check:packages
+pnpm test:browser
+```
+
+A partial run is not done. If you changed a workflow, also lint it with [actionlint](https://github.com/rhysd/actionlint).
+
 ## Code Style
 
 - TypeScript strict mode enabled
 - Biome handles linting and formatting (config in `biome.json`)
 - Run `pnpm lint` to check, `pnpm format` to auto-fix
 - Conventional Commits enforced via Commitlint
-- Husky hooks run typecheck on pre-commit
+- Git hooks (Husky): **pre-commit** runs Biome with fixes on staged `.ts`/`.js` files and re-stages them, so a commit can rewrite your files; then `pnpm typecheck` (needs a prior `pnpm build`). **commit-msg** runs commitlint.
 
 **Commit message format:**
 
@@ -144,26 +161,20 @@ chore: update dependencies
 
 ## Adding a New Package
 
-1. Create directory: `packages/new-package/` (or copy an example package; keep `"files": ["dist"]` and the `check:package` script)
-2. Add `package.json`:
-   ```json
-   {
-     "name": "@monorepo/new-package",
-     "version": "0.1.0",
-     "private": true,
-     "main": "./dist/index.js",
-     "types": "./dist/index.d.ts",
-     "scripts": {
-       "build": "tsc",
-       "typecheck": "tsc --noEmit",
-       "lint": "biome lint ./src"
-     }
-   }
-   ```
-3. Add `tsconfig.json` extending from root
-4. Create `src/index.ts`
-5. Add to `vitest.config.ts` alias if needed
-6. Run `pnpm install` to link workspace packages
+Copy the example closest to what you're building, then rename it:
+
+- `packages/core/`: a plain library (ES module and types)
+- `packages/browser-example/`: a library that runs in web pages (script-tag build, browser tests, size budget)
+- `packages/cli-example/`: a command people run (`bin`, Node target, test of the built command)
+
+Every package keeps these, or `pnpm check:packages` fails or it publishes broken:
+
+- `"type": "module"` and an `exports` map whose `types` and `import` point into `dist/`
+- `"files": ["dist"]`: without it, `npm pack` follows `.gitignore` and ships no `dist/`
+- `"private": true` until you intend to publish
+- the `check:package` script (`publint --strict && attw --pack . --profile esm-only`)
+
+Then run `pnpm install` to link it, and add a `vitest.config.ts` alias and root `tsconfig.json` path if other packages import it from source.
 
 ## Package Dependencies
 
@@ -176,6 +187,14 @@ Use workspace protocol for internal dependencies:
 ```
 
 Turborepo automatically builds dependencies in the correct order.
+
+## Dependencies and the Lockfile
+
+- Pin exact versions (no `^` or `~`), and pick releases at least 14 days old; pnpm enforces the age.
+- Read the `pnpm-lock.yaml` diff before committing. Adding or pinning one dependency should not change unrelated
+  versions; if it does, restore the lockfile and make the narrower change.
+- To deliberately re-resolve everything, delete `node_modules` (root and packages) as well as the lockfile.
+  Otherwise pnpm rebuilds from its hidden copy in `node_modules/.pnpm` and nothing is re-resolved.
 
 ## Versioning and Changesets
 
@@ -240,6 +259,12 @@ pnpm list --depth 0  # See all workspace packages
 - Clear cache: `pnpm clean` then `pnpm build`
 - Remove node_modules: `pnpm clean && pnpm install`
 
+**`ERR_PNPM_NO_MATURE_MATCHING_VERSION`:**
+
+- A version you asked for, or one a dependency needs, was published less than 14 days ago.
+- Choose an older version, or wait until it ages. Don't add it to `minimumReleaseAgeExclude`.
+- If the young version is already in the lockfile, re-resolve (see "Dependencies and the Lockfile").
+
 **CI failures on typecheck:**
 
 - Ensure build step runs before typecheck in workflow
@@ -295,7 +320,7 @@ When using this template:
 3. Update LICENSE file with your information
 4. Customize README.md for your project
 5. Decide which packages should be public vs private
-6. Update GitHub secrets if publishing to npm
+6. To publish, set up npm trusted publishing (README "Setting Up npm Publishing"); never add an npm token secret
 7. Start versioning your packages from `0.1.0` according to your development needs
 
 <!-- BEGIN:turborepo-agent-rules -->
