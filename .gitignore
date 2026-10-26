@@ -15,6 +15,9 @@ out
 
 # Testing
 coverage
+test-results
+playwright-report
+blob-report
 
 # Debug
 npm-debug.log*
