@@ -34,20 +34,19 @@ jobs:
           # This makes Actions fetch all Git history so that Changesets can generate changelogs
           fetch-depth: 0
 
+      # pnpm and Node versions come from package.json (packageManager, volta), so CI can't drift.
       - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 8
+        uses: pnpm/action-setup@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: package.json
           cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install Dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build Packages
         run: pnpm build
