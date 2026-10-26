@@ -1,0 +1,33 @@
+{
+  "name": "@monorepo/cli-example",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Example command-line package: a bin, a Node build target, and a test that runs the built command",
+  "type": "module",
+  "bin": {
+    "cli-example": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint ./src ./test",
+    "format": "biome format --write ./src ./test"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "tsup": "8.5.1",
+    "typescript": "6.0.3"
+  }
+}
