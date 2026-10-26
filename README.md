@@ -35,10 +35,12 @@ ts-monorepo/
 │   ├── feature-a/       # Feature package
 │   ├── browser-example/ # Browser library example (script tag + ES module)
 │   └── cli-example/     # Command-line package example (bin, Node target)
+├── AGENTS.md            # Instructions for coding agents (CLAUDE.md imports it)
 ├── biome.json           # Biome configuration
 ├── commitlint.config.js # Commitlint configuration
 ├── package.json         # Root package.json
-├── pnpm-workspace.yaml  # PNPM workspace config
+├── pnpm-workspace.yaml  # PNPM workspace config (14-day minimum release age)
+├── renovate.json        # Dependency update PRs (once releases are 14 days old)
 ├── playwright.config.ts # Browser tests (packages/*/e2e/*.e2e.ts)
 ├── tsconfig.json        # Base TypeScript config (Node)
 ├── tsconfig.browser.json # Browser TypeScript config (DOM, ES2020)
@@ -175,10 +177,7 @@ How a release runs (`.github/workflows/release.yml`), after CI passes on `main`,
 
 ### Adding a New Package
 
-1. Create a new folder in the `packages` directory
-2. Add a `package.json` with appropriate dependencies
-3. Add a `tsconfig.json` that extends the root `tsconfig.json` (Node) or `tsconfig.browser.json` (browser)
-4. Update root `tsconfig.json` with path mappings for the new package
+Copy the example closest to what you're building (`core` for a plain library, `browser-example` for web pages, `cli-example` for a command), then rename it. Keep `"type": "module"`, the `exports` map, `"files": ["dist"]` and the `check:package` script: `pnpm check:packages` fails without them. Run `pnpm install` to link it. If other packages import it from source, add a `vitest.config.ts` alias and a root `tsconfig.json` path.
 
 ### Package Interdependencies
 
