@@ -12,8 +12,10 @@ A modern TypeScript monorepo starter template with best practices for scalable p
 - 🏎️ [Turborepo](https://turbo.build/repo) for high-performance build system
 - 📦 [tsup](https://tsup.egoist.dev/) for fast, zero-config bundling with TypeScript support
 - 🔍 [Biome](https://biomejs.dev/) for fast linting and formatting
-- ⚙️ [TypeScript](https://www.typescriptlang.org/) configured with modern Node LTS settings
+- ⚙️ [TypeScript](https://www.typescriptlang.org/) 6, with Node LTS and browser presets
 - 🧪 [Vitest](https://vitest.dev/) for unit testing
+- 🌐 [Playwright](https://playwright.dev/) browser tests with [axe](https://github.com/dequelabs/axe-core-npm) accessibility checks
+- 📏 [size-limit](https://github.com/ai/size-limit) budgets that fail CI when a browser build grows
 - ⚡ [Volta](https://volta.sh/) for Node.js and package manager version management
 - 📝 [Commitlint](https://commitlint.js.org/) with Conventional Commits
 - 🔄 [Changesets](https://github.com/changesets/changesets) for versioning and changelogs
@@ -30,13 +32,15 @@ ts-monorepo/
 ├── packages/            # All packages
 │   ├── core/            # Core package
 │   ├── utils/           # Utilities package
-│   └── feature-a/       # Feature package
+│   ├── feature-a/       # Feature package
+│   └── browser-example/ # Browser library example (script tag + ES module)
 ├── biome.json           # Biome configuration
 ├── commitlint.config.js # Commitlint configuration
 ├── package.json         # Root package.json
 ├── pnpm-workspace.yaml  # PNPM workspace config
-├── tsconfig.json        # Base TypeScript config
-├── tsup.config.ts       # tsup build configuration
+├── playwright.config.ts # Browser tests (packages/*/e2e/*.e2e.ts)
+├── tsconfig.json        # Base TypeScript config (Node)
+├── tsconfig.browser.json # Browser TypeScript config (DOM, ES2020)
 ├── turbo.json           # Turborepo config
 └── vitest.config.ts     # Vitest config
 ```
@@ -171,7 +175,7 @@ By default, all packages are marked as `"private": true` to prevent accidental p
 
 1. Create a new folder in the `packages` directory
 2. Add a `package.json` with appropriate dependencies
-3. Add a `tsconfig.json` that extends from the root
+3. Add a `tsconfig.json` that extends the root `tsconfig.json` (Node) or `tsconfig.browser.json` (browser)
 4. Update root `tsconfig.json` with path mappings for the new package
 
 ### Package Interdependencies
@@ -182,6 +186,26 @@ Packages can depend on each other using the workspace protocol:
 "dependencies": {
   "@monorepo/core": "workspace:*"
 }
+```
+
+### Browser Libraries
+
+`packages/browser-example` shows the setup for a library that runs in web pages. Copy it as a starting point.
+
+- **Two builds** (`tsup.config.ts`): an ES module with types for bundlers, and a minified script-tag build (`dist/index.global.js`) that exposes a global.
+- **Nothing runs at import.** Work starts when the page calls the API, so importing the package is always safe.
+- **Isolation and safety:** the example renders in a shadow root, so host page CSS can't restyle it, and treats text as text, never HTML.
+- **Browser tests** in `e2e/*.e2e.ts` load the built script tag into a real page, including an [axe](https://github.com/dequelabs/axe-core-npm) accessibility check.
+- **Size budget** in the package's `size-limit` field. CI fails if the script-tag build grows past it.
+
+```bash
+# One-time: install the browser Playwright uses
+pnpm exec playwright install chromium
+
+# Build, then run browser tests and the size budget
+pnpm build
+pnpm test:browser
+pnpm size
 ```
 
 ## Versioning
