@@ -190,7 +190,7 @@ Turborepo automatically builds dependencies in the correct order.
 
 ## Dependencies and the Lockfile
 
-- Pin exact versions (no `^` or `~`), and pick releases at least 14 days old; pnpm enforces the age.
+- Pin exact versions (no `^` or `~`), and pick releases at least 3 days old; pnpm enforces the age.
 - Read the `pnpm-lock.yaml` diff before committing. Adding or pinning one dependency should not change unrelated
   versions; if it does, restore the lockfile and make the narrower change.
 - To deliberately re-resolve everything, delete `node_modules` (root and packages) as well as the lockfile.
@@ -261,8 +261,9 @@ pnpm list --depth 0  # See all workspace packages
 
 **`ERR_PNPM_NO_MATURE_MATCHING_VERSION`:**
 
-- A version you asked for, or one a dependency needs, was published less than 14 days ago.
-- Choose an older version, or wait until it ages. Don't add it to `minimumReleaseAgeExclude`.
+- A version you asked for, or one a dependency needs, was published less than 3 days ago.
+- Choose an older version, or wait until it ages. Never add a `minimumReleaseAgeExclude` entry on your own:
+  exceptions are for urgent security fixes, approved by a person (README "Dependency Updates").
 - If the young version is already in the lockfile, re-resolve (see "Dependencies and the Lockfile").
 
 **CI failures on typecheck:**
@@ -276,9 +277,11 @@ pnpm list --depth 0  # See all workspace packages
 - No npm token is stored: publishing uses npm trusted publishing (OIDC), with provenance
 - All packages default to private to prevent accidental publishing
 - Review dependencies regularly: `pnpm audit`
-- Nothing newer than 14 days installs: `minimumReleaseAge` in `pnpm-workspace.yaml`. Don't bypass it with
-  `minimumReleaseAgeExclude` to get a just-released version; wait for it to age.
-- Renovate (`renovate.json`) proposes updates once they're 14 days old and keeps GitHub Actions pinned to commit SHAs
+- Nothing newer than 3 days installs: `minimumReleaseAge` in `pnpm-workspace.yaml` (minutes).
+- Agents never add `minimumReleaseAgeExclude` entries. A person may approve one exact version for an urgent security
+  fix, with the advisory linked, removed once it is 3 days old (README "Dependency Updates").
+- Renovate (`renovate.json`) proposes updates once they're 3 days old, labels security fixes `security`, and keeps
+  GitHub Actions pinned to commit SHAs. Its `minimumReleaseAge` must equal pnpm's.
 
 ## Versioning Strategy
 

@@ -39,8 +39,8 @@ ts-monorepo/
 ├── biome.json           # Biome configuration
 ├── commitlint.config.js # Commitlint configuration
 ├── package.json         # Root package.json
-├── pnpm-workspace.yaml  # PNPM workspace config (14-day minimum release age)
-├── renovate.json        # Dependency update PRs (once releases are 14 days old)
+├── pnpm-workspace.yaml  # PNPM workspace config (3-day minimum release age)
+├── renovate.json        # Dependency update PRs (once releases are 3 days old)
 ├── playwright.config.ts # Browser tests (packages/*/e2e/*.e2e.ts)
 ├── tsconfig.json        # Base TypeScript config (Node)
 ├── tsconfig.browser.json # Browser TypeScript config (DOM, ES2020)
@@ -236,10 +236,22 @@ Every package lists `"files": ["dist"]`. Without it, what ships depends on the t
 
 ### Dependency Updates
 
-Every dependency is pinned to an exact version, and nothing newer than **14 days** is installed. Freshly published releases are where compromised packages tend to land; waiting gives the ecosystem time to catch them.
+Every dependency is pinned to an exact version, and nothing newer than **3 days** is installed. Freshly published releases are where compromised packages tend to land, and most are caught and pulled within hours to days; waiting means you never install them.
 
-- **pnpm enforces it on every install** (`minimumReleaseAge` in `pnpm-workspace.yaml`), including transitive dependencies. A version that is too new fails to install, with a message naming the setting.
-- **Renovate proposes the updates** (`renovate.json`): weekly, only once a release is 14 days old, grouped into one PR for GitHub Actions and one for dev tools. It also keeps the GitHub Actions pinned to exact commits and refreshes the lockfile weekly.
+- **pnpm enforces it on every install** (`minimumReleaseAge` in `pnpm-workspace.yaml`, in minutes), including transitive dependencies. A version that is too new fails to install, with a message naming the setting.
+- **Renovate proposes the updates** (`renovate.json`): weekly, only once a release is 3 days old, grouped into one PR for GitHub Actions and one for dev tools. It also keeps the GitHub Actions pinned to exact commits and refreshes the lockfile weekly. Keep its `minimumReleaseAge` equal to pnpm's, or it opens PRs that pnpm refuses.
+
+**An urgent security fix released today.** The rule allows one exact version through, never a whole package:
+
+1. Confirm the fix is real: a published advisory (GitHub advisory or CVE), a matching changelog entry, and the usual maintainer as publisher.
+2. Add that exact version to `pnpm-workspace.yaml`, with the advisory linked, then install and run the full checks:
+   ```yaml
+   minimumReleaseAgeExclude:
+     - somepkg@1.2.4 # https://github.com/advisories/GHSA-...
+   ```
+3. Remove the entry once the version is 3 days old.
+
+With Dependabot alerts on (**Settings → Advanced Security**), Renovate opens security-fix PRs right away, outside its weekly schedule, labelled `security`. A person still adds the exception in that PR.
 
 To turn Renovate on, install the [Renovate GitHub App](https://github.com/apps/renovate) for the repository. Its first PR is an onboarding check you merge to start.
 
