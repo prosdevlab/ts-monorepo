@@ -8,13 +8,15 @@ A modern TypeScript monorepo using pnpm workspaces, Turborepo for build orchestr
 
 **Tech Stack:**
 
-- Package manager: pnpm 8.15.4
+- Package manager: pnpm 10.26.2 (pinned via `packageManager` and Volta)
+- Language: TypeScript 6.0.3, with Node (`tsconfig.json`) and browser (`tsconfig.browser.json`) presets
 - Build system: Turborepo
 - Linter/Formatter: Biome
-- Testing: Vitest (run from root)
+- Testing: Vitest 5 (run from root), Playwright + axe for browser packages
+- Size budgets: size-limit, per browser package
 - CI/CD: GitHub Actions (separate CI and Release workflows)
 - Versioning: Changesets
-- Node.js: >= 22 (LTS)
+- Node.js: >= 24 (LTS; Volta pins 24.12.0, and CI reads the same version from package.json)
 
 ## Repository Structure
 
@@ -22,7 +24,8 @@ A modern TypeScript monorepo using pnpm workspaces, Turborepo for build orchestr
 packages/
 ├── core/          # Core package with tests
 ├── utils/         # Utilities (depends on core)
-└── feature-a/     # Feature package (depends on core and utils)
+├── feature-a/     # Feature package (depends on core and utils)
+└── browser-example/ # Browser library: ES module + script-tag build, e2e tests, size budget
 ```
 
 Each package has its own `package.json`, `tsconfig.json`, and `src/` directory. All packages are currently marked as `"private": true`.
@@ -47,6 +50,12 @@ pnpm test
 
 # Watch mode for tests
 pnpm test:watch
+
+# Browser tests (Playwright; run after build; first time: pnpm exec playwright install chromium)
+pnpm test:browser
+
+# Size budgets for browser builds (run after build)
+pnpm size
 
 # Clean all build outputs
 pnpm clean
