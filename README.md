@@ -246,15 +246,13 @@ To turn Renovate on, install the [Renovate GitHub App](https://github.com/apps/r
 
 ## Versioning
 
-This template follows [Semantic Versioning](https://semver.org/) at the repository level:
+Template releases are tagged at the repository level (`v1.0.0`, `v1.1.0`). A template is copied once and never upgraded in place, so versions mark milestones, not compatibility:
 
-- **Git tags**: `v1.0.0`, `v1.1.0`, `v2.0.0` (for template releases)
-- **Package versions**: Remain at `0.1.0` by default (customize after cloning)
+- **MAJOR**: a new generation of the template (package manager, build system or layout changes)
+- **MINOR**: meaningful changes, including major tool upgrades and workflow changes
+- **PATCH**: fixes and documentation
 
-**Version bumps:**
-- **MAJOR**: Breaking changes to template structure or tooling
-- **MINOR**: New features, examples, or improvements
-- **PATCH**: Bug fixes, documentation updates
+Package versions start at `0.1.0`; customize them after creating your project. Each release's notes list **Changes for existing projects**, including anything breaking.
 
 See [AGENTS.md](AGENTS.md) for detailed versioning strategy.
 

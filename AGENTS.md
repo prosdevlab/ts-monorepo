@@ -257,23 +257,20 @@ pnpm list --depth 0  # See all workspace packages
 
 ## Versioning Strategy
 
-This template follows [Semantic Versioning 2.0.0](https://semver.org/) at the **repository level**, not per-package.
+Versions apply to the **template repository** as a whole, not to its packages.
 
 ### Repository Versioning
 
-Git tags use the format `vMAJOR.MINOR.PATCH` (e.g., `v1.0.0`, `v1.1.0`):
+A template is copied once; each project then lives on its own and nothing upgrades in place. So template versions mark milestones, not compatibility. Git tags use the format `vMAJOR.MINOR.PATCH` (e.g., `v1.0.0`, `v1.1.0`):
 
-- **MAJOR**: Breaking changes to template structure, tooling, or workflows
-  - Example: Changing package manager, build system, or major workflow restructuring
-  - Users must adapt their code when upgrading
+- **MAJOR**: a new generation of the template, with a different shape
+  - Example: changing the package manager, the build system, or the repository layout
+- **MINOR**: a release of meaningful changes, including major tool upgrades and workflow changes
+  - Example: new example packages, new CI checks, TypeScript or Node major upgrades, a redesigned release workflow
+- **PATCH**: fixes and documentation
+  - Example: correcting CI configuration, updating the README
 
-- **MINOR**: New features, packages, or improvements (backward compatible)
-  - Example: Adding new example packages, new GitHub Actions workflows, new tooling
-  - Users can adopt new features without breaking changes
-
-- **PATCH**: Bug fixes, documentation updates, dependency patches
-  - Example: Fixing CI configuration, updating README, security patches
-  - Safe to update without any code changes
+Every release's notes include **Changes for existing projects**: what a project created from the previous version would change to match. Read that section before porting changes into a project; it is where breaking changes are called out.
 
 ### Package Versioning
 
