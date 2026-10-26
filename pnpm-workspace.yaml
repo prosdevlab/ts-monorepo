@@ -3,3 +3,10 @@ packages:
 
 # Install only versions published at least 3 days ago (minutes), transitive dependencies included.
 minimumReleaseAge: 4320
+# Fail instead of falling back to a younger version when nothing old enough matches.
+minimumReleaseAgeStrict: true
+
+# Dependencies allowed to run install scripts; pnpm fails the install on any it isn't told about.
+# esbuild ships its binary as a platform package, so its script is not needed.
+allowBuilds:
+  esbuild: false

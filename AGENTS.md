@@ -8,15 +8,16 @@ A modern TypeScript monorepo using pnpm workspaces, Turborepo for build orchestr
 
 **Tech Stack:**
 
-- Package manager: pnpm 10.34.8 (pinned via `packageManager` and Volta)
-- Language: TypeScript 6.0.3, with Node (`tsconfig.json`) and browser (`tsconfig.browser.json`) presets
+- Package manager: pnpm 12.15.0 (pinned via `packageManager`)
+- Language: TypeScript 7.0.2, with Node 26 (`tsconfig.json`) and browser (`tsconfig.browser.json`) presets
+- Build: `tsc` for every package; Rollup bundles the browser example's script-tag file
 - Build system: Turborepo
 - Linter/Formatter: Biome
 - Testing: Vitest 5 (run from root), Playwright + axe for browser packages
 - Size budgets: size-limit, per browser package
 - CI/CD: GitHub Actions (separate CI and Release workflows)
 - Versioning: Changesets
-- Node.js: >= 24 (LTS; Volta pins 24.22.1, and CI reads the same version from package.json)
+- Node.js: >= 26 (LTS; `devEngines.runtime` pins 26.12.1: pnpm downloads it locally, and CI reads the same version from package.json)
 
 ## Repository Structure
 
@@ -146,7 +147,7 @@ chore: update dependencies
 ### CI Workflow (`.github/workflows/ci.yml`)
 
 - Triggers: Push to main OR Pull Request to main
-- Node version: read from `package.json` (Volta pins 24.22.1)
+- Node version: read from `package.json` (`devEngines.runtime` pins 26.12.1)
 - Steps: Install → Lint → Build → Typecheck → Test → Size budget → Package checks → Browser tests
 - Least-privilege `permissions`; every action pinned to a commit SHA with the version in a comment
 - **Important:** Build runs BEFORE typecheck (required for type definitions)
@@ -168,6 +169,8 @@ Copy the example closest to what you're building, then rename it:
 - `packages/cli-example/`: a command people run (`bin`, Node target, test of the built command)
 
 Every package keeps these, or `pnpm check:packages` fails or it publishes broken:
+
+- a `build` script that deletes `dist` and runs `tsc -p tsconfig.json`
 
 - `"type": "module"` and an `exports` map whose `types` and `import` point into `dist/`
 - `"files": ["dist"]`: without it, `npm pack` follows `.gitignore` and ships no `dist/`
@@ -253,6 +256,23 @@ pnpm list --depth 0  # See all workspace packages
 - Tests must match `packages/**/*.{test,spec}.ts` pattern
 - Run from root: `pnpm test` (NOT from package directory with turbo)
 
+**`ENOEXEC` or "Failed to switch pnpm to v12":**
+
+- pnpm 10 can't switch itself to pnpm 12 (pnpm 12 is a native binary placed by an install script). Run `npm install -g pnpm@12.15.0`.
+
+**`EBADDEVENGINES` from `npm` or `npx`:**
+
+- npm refuses to run in this repository unless Node.js matches `devEngines.runtime` exactly. Run tools through pnpm
+  (`pnpm exec`, `pnpm dlx`), which uses the pinned Node.js.
+
+**A package builds but `dist/` is empty or stale:**
+
+- The build script deletes `dist` and runs `tsc` without `composite`. Don't re-add `composite` or `incremental`: with them, `tsc` can skip writing output after `dist` is deleted.
+
+**`ERR_PNPM_IGNORED_BUILDS`:**
+
+- A new dependency has an install script. Decide in `allowBuilds` (`pnpm-workspace.yaml`): `false` unless the package truly needs its script, and a person approves `true`.
+
 **Build failures:**
 
 - Check dependency order (core → utils → feature-a)
@@ -282,7 +302,7 @@ pnpm list --depth 0  # See all workspace packages
   fix, with the advisory linked, removed once it is 3 days old (README "Dependency Updates").
 - Renovate (`renovate.json`) proposes updates once they're 3 days old, labels security fixes `security`, and keeps
   GitHub Actions pinned to commit SHAs. Its `minimumReleaseAge` must equal pnpm's.
-- `@types/node` stays on the Node major Volta pins (a Renovate rule enforces it). Types for a newer Node let code
+- `@types/node` stays on the Node major `devEngines.runtime` pins (a Renovate rule enforces it). Types for a newer Node let code
   typecheck against APIs the pinned runtime doesn't have; upgrade Node and `@types/node` together.
 
 ## Versioning Strategy

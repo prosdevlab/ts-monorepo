@@ -1,22 +1,21 @@
 # TypeScript Monorepo Starter
 
-[![Node.js](https://img.shields.io/badge/node-%3E%3D24-brightgreen.svg)](https://nodejs.org/)
-[![pnpm](https://img.shields.io/badge/pnpm-10.34.8-orange.svg)](https://pnpm.io/)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D26-brightgreen.svg)](https://nodejs.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-12.15.0-orange.svg)](https://pnpm.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A modern TypeScript monorepo starter template with best practices for scalable projects.
 
 ## Features
 
-- 📦 [PNPM](https://pnpm.io/) for fast, disk-efficient package management
+- 📦 [PNPM](https://pnpm.io/) 12 for package management, and to pin the Node.js version
 - 🏎️ [Turborepo](https://turbo.build/repo) for high-performance build system
-- 📦 [tsup](https://tsup.egoist.dev/) for fast, zero-config bundling with TypeScript support
+- 🛠️ The TypeScript compiler (`tsc`) builds every package; [Rollup](https://rollupjs.org/) builds the script-tag file
 - 🔍 [Biome](https://biomejs.dev/) for fast linting and formatting
-- ⚙️ [TypeScript](https://www.typescriptlang.org/) 6, with Node LTS and browser presets
+- ⚙️ [TypeScript](https://www.typescriptlang.org/) 7, with Node 26 and browser presets
 - 🧪 [Vitest](https://vitest.dev/) for unit testing
 - 🌐 [Playwright](https://playwright.dev/) browser tests with [axe](https://github.com/dequelabs/axe-core-npm) accessibility checks
 - 📏 [size-limit](https://github.com/ai/size-limit) budgets that fail CI when a browser build grows
-- ⚡ [Volta](https://volta.sh/) for Node.js and package manager version management
 - 📝 [Commitlint](https://commitlint.js.org/) with Conventional Commits
 - 🔄 [Changesets](https://github.com/changesets/changesets) for versioning and changelogs
 - 🚀 GitHub Actions for CI/CD with npm publishing
@@ -52,8 +51,8 @@ ts-monorepo/
 
 ### Prerequisites
 
-- [Volta](https://volta.sh/) for Node.js and pnpm version management (recommended)
-  - Or [Node.js](https://nodejs.org/) (v24 LTS or higher) and [PNPM](https://pnpm.io/) (v10 or higher)
+- [pnpm](https://pnpm.io/) 12. It downloads the pinned Node.js version itself.
+- Any Node.js with npm, to install pnpm. After that, commands run through pnpm use the pinned Node.js 26 (`devEngines.runtime` in `package.json`).
 
 ### Installation
 
@@ -63,17 +62,15 @@ ts-monorepo/
    cd ts-monorepo
    ```
 
-2. Install Node.js and pnpm (if using Volta, this happens automatically)
+2. Install pnpm 12, once per machine
    ```bash
-   # With Volta (recommended)
-   volta install node@24.22.1 pnpm@10.34.8
-
-   # Or install manually
-   # Install Node.js 24+ from https://nodejs.org
-   # Install pnpm: npm install -g pnpm
+   npm install -g pnpm@12.15.0
    ```
+   pnpm 12 ships a native binary that its install script puts in place. pnpm 10 can't switch itself to 12, so upgrade it this way.
 
-3. Install dependencies
+   Inside the repository, run one-off tools with `pnpm dlx` or `pnpm exec`. `npm` and `npx` refuse to run unless your system Node.js matches the pinned version exactly.
+
+3. Install dependencies (this also downloads the pinned Node.js)
    ```bash
    pnpm install
    ```
@@ -107,7 +104,7 @@ pnpm format
 
 #### Building
 
-This template uses [tsup](https://tsup.egoist.dev/) for fast, zero-config bundling with TypeScript support. All packages are built as ESM modules.
+Every package builds with the TypeScript compiler (`tsc -p tsconfig.json`). No bundler is involved for libraries: their consumers bundle. All packages are ES modules.
 
 ```bash
 # Build all packages
@@ -121,10 +118,11 @@ pnpm -F "@monorepo/core" dev
 ```
 
 **Build Configuration:**
-- **Output**: ESM modules (`dist/index.js`)
-- **Types**: Generated automatically (`dist/index.d.ts`)
-- **Source maps**: Included for debugging
-- **Tree shaking**: Enabled for optimal bundle size
+- **Output**: one ES module per source file (`dist/index.js`, ...)
+- **Types**: one declaration file per source file (`dist/index.d.ts`), with declaration maps
+- **Source maps**: included for debugging
+- **Clean builds**: the build script deletes `dist` first, so files from removed sources never ship
+- **Not incremental**: the packages don't use `composite`. With it, `tsc` keeps a build-info file and can skip writing anything after `dist` is deleted.
 
 ### Making Changes
 
@@ -193,7 +191,7 @@ Packages can depend on each other using the workspace protocol:
 
 `packages/browser-example` shows the setup for a library that runs in web pages. Copy it as a starting point.
 
-- **Two builds** (`tsup.config.ts`): an ES module with types for bundlers, and a minified script-tag build (`dist/index.global.js`) that exposes a global.
+- **Two builds**: `tsc` writes the ES module and its types for bundlers. [Rollup](https://rollupjs.org/) (`rollup.config.js`) then bundles that output into a minified script-tag file (`dist/index.global.js`) that exposes a global. Rollup reads JavaScript, so it needs no TypeScript plugin, only terser to minify.
 - **Nothing runs at import.** Work starts when the page calls the API, so importing the package is always safe.
 - **Isolation and safety:** the example renders in a shadow root, so host page CSS can't restyle it, and treats text as text, never HTML.
 - **Browser tests** in `e2e/*.e2e.ts` load the built script tag into a real page, including an [axe](https://github.com/dequelabs/axe-core-npm) accessibility check.
@@ -213,8 +211,8 @@ pnpm size
 
 `packages/cli-example` shows the setup for a package people run as a command (`npx your-tool`). Copy it as a starting point.
 
-- **A `bin` entry** in `package.json` points at `dist/cli.js`. The source starts with `#!/usr/bin/env node`; tsup keeps that line and marks the built file executable.
-- **Node build target** (`tsup.config.ts`): `platform: 'node'`, `target: 'node24'`, ES module output.
+- **A `bin` entry** in `package.json` points at `dist/cli.js`. The source starts with `#!/usr/bin/env node`; `tsc` keeps that line, and the build script marks the file executable (`chmod +x`).
+- **Node 26 target**: the root `tsconfig.json` extends `@tsconfig/node26`, and `engines.node` is `>=26`.
 - **Logic separate from the process.** `src/index.ts` exports `run(argv, io)`, which returns an exit code instead of exiting, so it is unit-tested directly. `src/cli.ts` is the two-line entry point that calls it.
 - **No argument-parsing dependency:** Node's built-in `util.parseArgs`, with unknown options reported as errors (exit 2) instead of crashes.
 - **A test of the built command** (`test/bin.test.ts`) runs `dist/cli.js` the way a user would: shebang, executable bit, output, exit codes. It fails with a clear message if you haven't built first.
@@ -238,8 +236,9 @@ Every package lists `"files": ["dist"]`. Without it, what ships depends on the t
 
 Every dependency is pinned to an exact version, and nothing newer than **3 days** is installed. Freshly published releases are where compromised packages tend to land, and most are caught and pulled within hours to days; waiting means you never install them.
 
-- **pnpm enforces it on every install** (`minimumReleaseAge` in `pnpm-workspace.yaml`, in minutes), including transitive dependencies. A version that is too new fails to install, with a message naming the setting.
-- **Renovate proposes the updates** (`renovate.json`): weekly, only once a release is 3 days old, grouped into one PR for GitHub Actions and one for dev tools. It also keeps the GitHub Actions pinned to exact commits and refreshes the lockfile weekly. Keep its `minimumReleaseAge` equal to pnpm's, or it opens PRs that pnpm refuses. It keeps `@types/node` on the Node major that Volta pins; raise both together.
+- **pnpm enforces it on every install** (`minimumReleaseAge` in `pnpm-workspace.yaml`, in minutes), including transitive dependencies. `minimumReleaseAgeStrict: true` makes a version that is too new fail the install, with a message naming the setting, instead of falling back to it. pnpm 12 also rejects a misspelled setting, so a typo can't silently turn the rule off.
+- **Install scripts are opt-in** (`allowBuilds` in `pnpm-workspace.yaml`). pnpm fails the install when a dependency has a script nobody approved or denied.
+- **Renovate proposes the updates** (`renovate.json`): weekly, only once a release is 3 days old, grouped into one PR for GitHub Actions and one for dev tools. It also keeps the GitHub Actions pinned to exact commits and refreshes the lockfile weekly. Keep its `minimumReleaseAge` equal to pnpm's, or it opens PRs that pnpm refuses. It keeps `@types/node` on the Node major that `devEngines.runtime` pins; raise both together.
 
 **An urgent security fix released today.** The rule allows one exact version through, never a whole package:
 

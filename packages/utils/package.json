@@ -15,8 +15,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "rm -rf dist && tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
     "lint": "biome lint ./src",
@@ -29,7 +29,6 @@
     "@monorepo/core": "workspace:*"
   },
   "devDependencies": {
-    "tsup": "9.0.0",
-    "typescript": "6.0.3"
+    "typescript": "7.0.2"
   }
 }

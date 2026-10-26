@@ -28,9 +28,9 @@
       "groupName": "dev dependencies"
     },
     {
-      "description": "Keep @types/node on the Node major that Volta pins; raise both together",
+      "description": "Keep @types/node on the Node major that devEngines.runtime pins; raise both together",
       "matchPackageNames": ["@types/node"],
-      "allowedVersions": "24.x"
+      "allowedVersions": "26.x"
     }
   ]
 }

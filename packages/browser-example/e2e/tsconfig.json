@@ -2,9 +2,9 @@
   "extends": "../../../tsconfig.json",
   "compilerOptions": {
     "noEmit": true,
-    "composite": false,
     "declaration": false,
     "declarationMap": false,
+    "lib": ["ES2025", "DOM"],
     "types": [
       "node"
     ]
