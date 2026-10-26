@@ -155,20 +155,21 @@ Releasing is handled automatically through GitHub Actions when changes are merge
 
 #### Setting Up npm Publishing
 
-By default, all packages are marked as `"private": true` to prevent accidental publishing. To publish packages to npm:
+Packages publish with **npm trusted publishing**: GitHub Actions proves its identity to npm for each release, so no npm token is stored anywhere, and each version gets a **provenance** statement linking it to the commit and workflow that built it (for public packages from public repositories).
 
-1. In the package's `package.json`, change `"private": true` to `"private": false`
-2. Add a `publishConfig` section:
-   ```json
-   "publishConfig": {
-     "access": "public"
-   }
-   ```
-3. Generate an npm access token with publish permissions from [npmjs.com](https://www.npmjs.com/settings/~/tokens)
-4. Add the token as a repository secret named `NPM_TOKEN` in GitHub (Settings → Secrets and variables → Actions)
-5. Ensure your package names are unique in the npm registry or use a scoped package name
+By default, all packages are `"private": true`, so the release workflow does nothing. To publish a package:
 
-**Note:** The release workflow only runs after the CI workflow succeeds on the `main` branch.
+1. In its `package.json`, set `"private": false` and add `"publishConfig": { "access": "public" }`. Use a name that's free on npm, or a scope you own.
+2. On npmjs.com, open the package's **Settings → Trusted publishing** and add a GitHub Actions publisher: your user or organization, this repository, workflow file `release.yml`, environment `npm`. A new trusted publisher must complete its first publish within 2 days. If npm won't let you configure a package that doesn't exist yet, publish the first version by hand (`npm publish --access public`, with two-factor authentication), then add the publisher.
+3. In the same settings, under **Publishing access**, choose **Require two-factor authentication and disallow tokens**. Trusted publishing keeps working; a leaked token can't publish.
+4. In GitHub, under **Settings → Actions → General**, enable **Allow GitHub Actions to create and approve pull requests**, so the workflow can open the version PR. Optionally, add required reviewers to the `npm` environment (**Settings → Environments**) to approve each publish.
+
+How a release runs (`.github/workflows/release.yml`), after CI passes on `main`, against the exact commit CI tested:
+
+1. **select-mode** reads the changesets: version, publish, or nothing.
+2. **version** (changesets present) opens or updates the "version packages" PR. It can write to the repository but cannot reach npm.
+3. **pack** (version PR merged) builds, runs the package checks, and packs tarballs, with read-only access.
+4. **publish** publishes those tarballs. It is the only job that can get npm credentials, and it never builds.
 
 ## Working with this Monorepo
 

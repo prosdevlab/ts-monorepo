@@ -129,16 +129,18 @@ chore: update dependencies
 ### CI Workflow (`.github/workflows/ci.yml`)
 
 - Triggers: Push to main OR Pull Request to main
-- Node version: 22.x (LTS)
-- Steps: Install → Lint → Build → Typecheck → Test
+- Node version: read from `package.json` (Volta pins 24.12.0)
+- Steps: Install → Lint → Build → Typecheck → Test → Size budget → Package checks → Browser tests
+- Least-privilege `permissions`; every action pinned to a commit SHA with the version in a comment
 - **Important:** Build runs BEFORE typecheck (required for type definitions)
 
 ### Release Workflow (`.github/workflows/release.yml`)
 
 - Triggers: After CI succeeds on main branch (workflow_run)
-- Uses Changesets to version and publish packages
+- Four jobs: select-mode → version (opens the version PR) or pack → publish
+- Publishes with npm trusted publishing (OIDC): no npm token exists; only the `publish` job has `id-token: write`
 - **By default, does nothing** because all packages are private
-- To enable publishing: Set `"private": false` in package.json and add `NPM_TOKEN` secret
+- To enable publishing: see README "Setting Up npm Publishing" (trusted publisher on npmjs.com, `npm` environment)
 
 ## Adding a New Package
 
@@ -194,8 +196,8 @@ To publish a package:
    - Change `"private": true` to `"private": false`
    - Add `"publishConfig": { "access": "public" }`
 2. Ensure unique package name or use scoped name
-3. Add `NPM_TOKEN` secret in GitHub repo settings
-4. Release workflow will publish on next version bump
+3. Add a trusted publisher for the package on npmjs.com (repository, `release.yml`, environment `npm`)
+4. Release workflow will publish on next version bump; never add an `NPM_TOKEN` secret
 
 ## Common Patterns
 
@@ -246,7 +248,7 @@ pnpm list --depth 0  # See all workspace packages
 ## Security Considerations
 
 - Never commit `.env` files or secrets
-- NPM_TOKEN is stored as GitHub secret (not in code)
+- No npm token is stored: publishing uses npm trusted publishing (OIDC), with provenance
 - All packages default to private to prevent accidental publishing
 - Review dependencies regularly: `pnpm audit`
 - Nothing newer than 14 days installs: `minimumReleaseAge` in `pnpm-workspace.yaml`. Don't bypass it with
