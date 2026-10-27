@@ -231,7 +231,8 @@ Turborepo automatically builds dependencies in the correct order.
 To publish:
 
 1. Give each package a name that's free on npm, or use a scope you own. Mark any package that must never publish
-   `"private": true`
+   `"private": true`. Add `"repository": {"type": "git", "url": "git+https://github.com/<owner>/<repo>.git", "directory": "packages/<name>"}`
+   to each package you publish, because npm provenance checks it against the publishing repository
 2. Set the repository variable `NPM_PUBLISH` to `true` (Settings → Secrets and variables → Actions → Variables)
 3. Add a trusted publisher for the package on npmjs.com (repository, workflow `ci.yml`, environment `npm`): npm checks
    the calling workflow, and `ci.yml` calls `release.yml`
@@ -274,7 +275,8 @@ pnpm list --depth 0  # See all workspace packages
 
 **`ENOEXEC` or "Failed to switch pnpm to v12":**
 
-- pnpm 10 can't switch itself to pnpm 12 (pnpm 12 is a native binary placed by an install script). Run `npm install -g pnpm@12.15.0`.
+- A Volta-managed pnpm 10 can't switch itself to pnpm 12 (pnpm 12 is a native binary placed by an install script). Run `volta install pnpm@12.15.0`, or install pnpm with npm: `npm install -g pnpm@12.15.0`.
+- pnpm 9 or older fails with `ERR_PNPM_UNSUPPORTED_ENGINE`: the root `engines.pnpm` requires 12 or newer. Install pnpm 12 the same way.
 
 **`EBADDEVENGINES` from `npm` or `npx`:**
 
