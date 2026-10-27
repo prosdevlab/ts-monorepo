@@ -63,6 +63,9 @@ pnpm size
 # Pack each package as it would publish and check layout and types (publint, attw)
 pnpm check:packages
 
+# Unused files, exports and dependencies, and undeclared dependencies (knip; no build needed)
+pnpm check:unused
+
 # Clean all build outputs
 pnpm clean
 ```
@@ -114,6 +117,7 @@ Run the same sequence CI runs, in this order, and report any failure with its ou
 ```bash
 pnpm install --frozen-lockfile
 pnpm lint
+pnpm check:unused
 pnpm build
 pnpm typecheck
 pnpm test

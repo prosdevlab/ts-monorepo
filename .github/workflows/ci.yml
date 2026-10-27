@@ -41,6 +41,10 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      # Unused files, exports and dependencies, and dependencies used but not declared (knip).
+      - name: Unused code
+        run: pnpm check:unused
+
       - name: Build
         run: pnpm build
 
