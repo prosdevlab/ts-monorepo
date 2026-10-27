@@ -349,6 +349,7 @@ When using this template:
 2. Update repository URL in root `package.json`
 3. Update LICENSE file with your information
 4. Customize README.md for your project
+   - Turn on private vulnerability reporting (Settings → Advanced Security), and set the reply time in `SECURITY.md`
 5. Decide which packages should be public vs private
 6. To publish, set up npm trusted publishing (README "Setting Up npm Publishing"); never add an npm token secret
 7. Start versioning your packages from `0.1.0` according to your development needs
