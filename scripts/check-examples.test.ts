@@ -95,6 +95,17 @@ describe('checkExamples', () => {
     expect(messages({ 'README.md': '<!-- example: web -->' })).toEqual(['malformed marker']);
     expect(messages({ 'a.ts': '// Example:lib' })).toEqual(['malformed marker']);
     expect(messages({ 'ci.yml': '#example :web' })).toEqual(['malformed marker']);
+    expect(messages({ 'a.ts': '/* example:cli */' })).toEqual(['malformed marker']);
+    expect(messages({ 'a.ts': '// /example: template-only' })).toEqual(['malformed marker']);
+  });
+
+  it('leaves prose that says "example:" alone', () => {
+    expect(messages({ 'README.md': '## Example: usage' })).toEqual([]);
+    expect(messages({ 'README.md': '<!-- Example: see below -->' })).toEqual([]);
+    expect(messages({ 'a.ts': '// For example: call it twice' })).toEqual([]);
+    expect(messages({ 'ci.yml': '# Example: a matrix entry' })).toEqual([]);
+    // A name that only starts like an example is prose too.
+    expect(messages({ 'a.ts': '// example: library usage' })).toEqual([]);
   });
 
   it('treats ~~~ like ``` for code fences', () => {

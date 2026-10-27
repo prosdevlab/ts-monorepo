@@ -26,9 +26,12 @@ const MARKER = {
   slash: /^\/\/\s*(\/?)example:(\S+)$/,
 };
 
-// A comment-shaped line that mentions example: but isn't a strict marker.
-const COMMENT = /^(<!--|#|\/\/|\/\*)/;
-const LOOSE = /example\s*:/i;
+// A comment that opens with example:<a known example> but isn't a strict marker.
+// Prose like "## Example: usage" or "// For example:" names no example, so it passes.
+const LOOSE = new RegExp(
+  `^(<!--|#|//|/\\*)\\s*/?\\s*example\\s*:\\s*(${Object.keys(EXAMPLES).join('|')})(?![\\w-])`,
+  'i',
+);
 
 function styleOf(file) {
   const ext = extname(file);
@@ -74,7 +77,7 @@ export function checkExamples(files) {
         }
         continue;
       }
-      if (!inFence && COMMENT.test(trimmed) && LOOSE.test(trimmed)) add(line, 'malformed marker');
+      if (!inFence && LOOSE.test(trimmed)) add(line, 'malformed marker');
       const open = stack.at(-1)?.name;
       const lower = raw.toLowerCase();
       for (const [name, example] of Object.entries(EXAMPLES)) {
