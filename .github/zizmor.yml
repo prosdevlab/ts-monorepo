@@ -1,0 +1,6 @@
+# zizmor settings for the workflows audit in ci.yml.
+rules:
+  dependabot-cooldown:
+    config:
+      # Match pnpm's minimumReleaseAge (3 days); zizmor's default asks for 7.
+      days: 3

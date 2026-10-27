@@ -39,7 +39,7 @@ A modern TypeScript monorepo starter template with best practices for scalable p
 ```
 ts-monorepo-starter/
 ├── .changeset/          # Changesets configuration
-├── .github/             # Workflows, Dependabot config, issue forms, PR template
+├── .github/             # Workflows, Dependabot and zizmor config, issue forms, PR template
 ├── .husky/              # Git hooks
 ├── packages/            # All packages (the examples are listed below)
 ├── .editorconfig        # Editor defaults matching Biome's formatter
@@ -399,7 +399,7 @@ Every dependency is pinned to an exact version, and nothing newer than **3 days*
 
 - **pnpm enforces it on every install** (`minimumReleaseAge` in `pnpm-workspace.yaml`, in minutes), including transitive dependencies. `minimumReleaseAgeStrict: true` makes a version that is too new fail the install, with a message naming the setting, instead of falling back to it. pnpm 12 also rejects a misspelled setting, so a typo can't silently turn the rule off.
 - **Install scripts are opt-in** (`allowBuilds` in `pnpm-workspace.yaml`). pnpm fails the install when a dependency has a script nobody approved or denied.
-- **Dependabot proposes the updates** (`.github/dependabot.yml`): weekly, only once a release is 3 days old (`cooldown`), with minor and patch dev-tool updates grouped into one PR and GitHub Actions into another. It keeps the GitHub Actions pinned to exact commits. Keep its `cooldown` equal to pnpm's `minimumReleaseAge`, or it opens PRs that pnpm refuses. It is built into GitHub: no app to install.
+- **Dependabot proposes the updates** (`.github/dependabot.yml`): weekly, only once a release is 3 days old (`cooldown`), with minor and patch dev-tool updates grouped into one PR and GitHub Actions into another. It keeps the GitHub Actions pinned to exact commits. Keep its `cooldown` equal to pnpm's `minimumReleaseAge`, or it opens PRs that pnpm refuses, and keep `days` in `.github/zizmor.yml` equal to both: zizmor fails CI on a shorter cooldown. It is built into GitHub: no app to install.
 - **Some versions are raised by hand**, because Dependabot doesn't read them: the Node version in `devEngines.runtime`, the zizmor version in `ci.yml` (`ZIZMOR_VERSION`), and `@types/node` majors. Keep `@types/node` on the matching Node major: 26.x in the root `package.json` (the pinned `devEngines.runtime`) and 24.x in packages (the oldest `engines.node`). Raise each with its Node version.
 - **CI audits every install** (`pnpm audit --audit-level high`) against the npm registry's advisories, and fails on high or critical ones.
 

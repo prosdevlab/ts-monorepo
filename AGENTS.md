@@ -367,7 +367,7 @@ pnpm list --depth 0  # See all workspace packages
 - Agents never add `minimumReleaseAgeExclude` entries. A person may approve one exact version for an urgent security
   fix, with the advisory linked, removed once it is 3 days old (README "Dependency Updates").
 - Dependabot (`.github/dependabot.yml`) proposes updates once they're 3 days old and keeps GitHub Actions pinned to commit
-  SHAs. Its `cooldown` must equal pnpm's `minimumReleaseAge`. It doesn't update `devEngines.runtime`, `ZIZMOR_VERSION` or
+  SHAs. Its `cooldown` must equal pnpm's `minimumReleaseAge`, and so must `days` in `.github/zizmor.yml`. It doesn't update `devEngines.runtime`, `ZIZMOR_VERSION` or
   `@types/node` majors: those are raised by hand.
 - `@types/node` matches the Node major the code runs on (Dependabot skips its majors): 26.x in the root `package.json`, for the
   tooling on the pinned runtime; 24.x in packages, for the oldest `engines.node`. Types for a newer Node let code typecheck
