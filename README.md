@@ -125,7 +125,7 @@ Each version is set in one place, and the tools on the right read it from there.
    ```bash
    npm install -g pnpm@12.15.0
    ```
-   pnpm 10.26 or newer switches itself to pnpm 12 when you run it here, so you can skip this step. Run it on a machine with no pnpm, or with pnpm 9 or older: those refuse to install (`ERR_PNPM_UNSUPPORTED_ENGINE`). If Volta manages your pnpm, run `volta install pnpm@12.15.0` instead.
+   If Volta manages your pnpm, run `volta install pnpm@12.15.0` instead. Otherwise, pnpm 10.26 or newer switches itself to pnpm 12 when you run it here, so you can skip this step. Run it on a machine with no pnpm, or with pnpm older than 10.26. A pnpm that doesn't switch itself to 12 refuses to install here (`ERR_PNPM_UNSUPPORTED_ENGINE`).
 
    Inside the repository, run one-off tools with `pnpm dlx` or `pnpm exec`. `npm` and `npx` refuse to run unless your system Node.js matches the pinned version exactly.
 

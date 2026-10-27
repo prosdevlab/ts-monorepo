@@ -276,7 +276,11 @@ pnpm list --depth 0  # See all workspace packages
 **`ENOEXEC` or "Failed to switch pnpm to v12":**
 
 - A Volta-managed pnpm 10 can't switch itself to pnpm 12 (pnpm 12 is a native binary placed by an install script). Run `volta install pnpm@12.15.0`, or install pnpm with npm: `npm install -g pnpm@12.15.0`.
-- pnpm 9 or older fails with `ERR_PNPM_UNSUPPORTED_ENGINE`: the root `engines.pnpm` requires 12 or newer. Install pnpm 12 the same way.
+
+**`ERR_PNPM_UNSUPPORTED_ENGINE`:**
+
+- The root `engines.pnpm` (`>=12`) refuses a pnpm older than 12 that doesn't switch itself, such as pnpm 9. Install pnpm 12 with `npm install -g pnpm@12.15.0`.
+- If the message names Node.js instead, the system Node is older than 26 (`engines.node`) and pnpm ran on it. Use Node 26 or newer, or a pnpm that switches itself to 12.
 
 **`EBADDEVENGINES` from `npm` or `npx`:**
 
