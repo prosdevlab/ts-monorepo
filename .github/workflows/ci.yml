@@ -10,6 +10,11 @@ on:
 permissions:
   contents: read
 
+# A new push to a pull request cancels its older run; runs on main always finish, since they release.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -108,13 +113,34 @@ jobs:
           node --version
           node node_modules/vitest/vitest.mjs run
 
+  # Audits the workflows themselves (zizmor): injection, excessive permissions, unsafe triggers, unpinned actions.
+  workflows:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      # renovate: datasource=github-releases depName=zizmorcore/zizmor extractVersion=^v(?<version>.+)$
+      ZIZMOR_VERSION: 1.31.1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Without Advanced Security, findings fail the job, and private copies of the template work the same way.
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@53290badfa369cb0bf7ad16342cb62c2fa47ac7b # v0.8.0
+        with:
+          advanced-security: false
+          version: ${{ env.ZIZMOR_VERSION }}
+
   # Releases only on pushes to main, after every check passes. Pull requests, including forks, never reach it.
   # The trusted publisher on npmjs.com names this file (ci.yml): npm checks the calling workflow.
   release:
-    needs: [build, compat]
+    needs: [build, compat, workflows]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: write # version PR branch, git tags, GitHub releases
       pull-requests: write # the version PR
       id-token: write # npm trusted publishing (OIDC); release.yml grants it only to the publish job
-    uses: ./.github/workflows/release.yml
+    # A job-level ./ reference is read from this commit, not from files a step wrote, so $/ adds nothing here.
+    uses: ./.github/workflows/release.yml # zizmor: ignore[self-repository]

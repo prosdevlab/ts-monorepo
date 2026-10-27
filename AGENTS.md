@@ -122,7 +122,8 @@ pnpm check:packages
 pnpm test:browser
 ```
 
-A partial run is not done. If you changed a workflow, also lint it with [actionlint](https://github.com/rhysd/actionlint).
+A partial run is not done. If you changed a workflow, also lint it with [actionlint](https://github.com/rhysd/actionlint)
+and audit it with [zizmor](https://docs.zizmor.sh/) (`zizmor .github/workflows`); CI fails on any zizmor finding.
 
 ## Code Style
 
@@ -153,11 +154,14 @@ chore: update dependencies
 - `compat` job: build, then the unit tests on Node 24 and 26 × Linux, macOS, Windows. It calls Vitest with `node` directly,
   because pnpm would run it on the pinned Node 26
 - Least-privilege `permissions`; every action pinned to a commit SHA with the version in a comment
+- `workflows` job: zizmor (version pinned in `ZIZMOR_VERSION`, updated by Renovate) audits every workflow and fails on
+  any finding. Suppress one only with an inline `# zizmor: ignore[rule]` and a comment saying why it doesn't apply
+- A new push to a PR cancels that PR's older run; runs on `main` always finish, because they release
 - **Important:** Build runs BEFORE typecheck (required for type definitions)
 
 ### Release Workflow (`.github/workflows/release.yml`)
 
-- Triggers: called by CI's `release` job (`workflow_call`) on pushes to main, after `build` and `compat` pass; or a
+- Triggers: called by CI's `release` job (`workflow_call`) on pushes to main, after every other CI job passes; or a
   manual run on main. Never `workflow_run`: it also fires for fork PRs from a branch named main, running their code
   with write access
 - Four jobs: select-mode → version (opens the version PR) or pack → publish
