@@ -33,9 +33,8 @@ ts-monorepo-starter/
 ├── .github/             # Workflows, issue forms, PR template
 ├── .husky/              # Git hooks
 ├── packages/            # All packages
-│   ├── core/            # Core package
-│   ├── utils/           # Utilities package
-│   ├── feature-a/       # Feature package
+│   ├── shared/          # Shared package: core service and logger
+│   ├── lib/             # Library package (depends on shared)
 │   ├── browser-example/ # Browser library example (script tag + ES module)
 │   └── cli-example/     # Command-line package example (bin, Node target)
 ├── .editorconfig        # Editor defaults matching Biome's formatter
@@ -58,18 +57,14 @@ ts-monorepo-starter/
 ### Packages and build order
 
 ```
-  ┌──────────┐
-  │   core   │ ─────────────────────┐
-  └────┬─────┘                      │
-       ▼                            ▼
-  ┌──────────┐               ┌─────────────┐
-  │  utils   │ ────────────▶ │  feature-a  │
-  └──────────┘               └─────────────┘
+  ┌──────────┐         ┌──────────┐
+  │  shared  │ ──────▶ │   lib    │
+  └──────────┘         └──────────┘
 
   browser-example     cli-example        no internal dependencies
 ```
 
-An arrow points from a package to a package that depends on it. `pnpm build` builds `core`, then `utils`, then `feature-a` (Turborepo's `dependsOn: ["^build"]`); the standalone packages build alongside. Typecheck reads each dependency's built `dist/`, so build before typechecking. Unit tests import sources directly, through the aliases in `vitest.config.ts`.
+An arrow points from a package to a package that depends on it. `pnpm build` builds `shared`, then `lib` (Turborepo's `dependsOn: ["^build"]`); the standalone packages build alongside. Typecheck reads each dependency's built `dist/`, so build before typechecking. Unit tests import sources directly, through the aliases in `vitest.config.ts`.
 
 ### What a build produces
 
@@ -148,7 +143,7 @@ Each version is set in one place, and the tools on the right read it from there.
 pnpm test
 
 # Run tests in watch mode
-pnpm -F "@monorepo/core" test:watch
+pnpm -F "@monorepo/shared" test:watch
 ```
 
 #### Linting and Formatting
@@ -170,10 +165,10 @@ Every package builds with the TypeScript compiler (`tsc -p tsconfig.json`). No b
 pnpm build
 
 # Build a specific package
-pnpm -F "@monorepo/core" build
+pnpm -F "@monorepo/shared" build
 
 # Watch mode for development
-pnpm -F "@monorepo/core" dev
+pnpm -F "@monorepo/shared" dev
 ```
 
 **Build Configuration:**
@@ -217,7 +212,7 @@ Releasing is handled automatically through GitHub Actions when changes are merge
 With previews on, every push to `main` and every PR from a branch in this repository publishes each package to [pkg.pr.new](https://pkg.pr.new). A bot comments the install commands on the PR, so anyone can try a change before it's released:
 
 ```bash
-npm i https://pkg.pr.new/<owner>/<repo>/@monorepo/core@<pr-number>
+npm i https://pkg.pr.new/<owner>/<repo>/@monorepo/shared@<pr-number>
 ```
 
 Previews aren't npm releases. They aren't versioned and they don't need an npm account. Dependencies between the packages point at the same preview. PRs from forks never run the preview job, so a stranger's code is never built and published.
@@ -265,7 +260,7 @@ How a release runs: CI's `release` job calls `.github/workflows/release.yml` on 
 
 ### Adding a New Package
 
-Copy the example closest to what you're building (`core` for a plain library, `browser-example` for web pages, `cli-example` for a command), then rename it. Keep `"type": "module"`, the `exports` map, `"files": ["dist"]` and the `check:package` script: `pnpm check:packages` fails without them. Run `pnpm install` to link it. If other packages import it from source, add a `vitest.config.ts` alias and a root `tsconfig.json` path.
+Copy the example closest to what you're building (`shared` for a plain library, `browser-example` for web pages, `cli-example` for a command), then rename it. Keep `"type": "module"`, the `exports` map, `"files": ["dist"]` and the `check:package` script: `pnpm check:packages` fails without them. Run `pnpm install` to link it. If other packages import it from source, add a `vitest.config.ts` alias and a root `tsconfig.json` path.
 
 ### Package Interdependencies
 
@@ -273,7 +268,7 @@ Packages can depend on each other using the workspace protocol:
 
 ```json
 "dependencies": {
-  "@monorepo/core": "workspace:*"
+  "@monorepo/shared": "workspace:*"
 }
 ```
 

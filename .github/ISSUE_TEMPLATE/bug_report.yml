@@ -9,7 +9,7 @@ body:
     id: package
     attributes:
       label: Package and version
-      placeholder: '@monorepo/core 0.1.0'
+      placeholder: '@monorepo/shared 0.1.0'
     validations:
       required: true
   - type: textarea

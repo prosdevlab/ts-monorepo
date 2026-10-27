@@ -29,7 +29,7 @@ Types:
 
 Example:
 ```
-feat(core): add new API method for authentication
+feat(shared): add new API method for authentication
 ```
 
 ## Pull Request Process

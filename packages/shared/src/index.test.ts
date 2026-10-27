@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { CoreService, createCoreService } from './index';
+import { describe, expect, it } from 'vitest';
+import { CoreService, createCoreService, createLogger } from './index';
 
 describe('CoreService', () => {
   it('should create a CoreService instance', () => {
@@ -16,5 +16,14 @@ describe('CoreService', () => {
     const service = createCoreService({ apiKey: 'factory-key', debug: true });
     expect(service).toBeInstanceOf(CoreService);
     expect(service.getApiKey()).toBe('factory-key');
+  });
+});
+
+describe('Logger', () => {
+  it('Logger reports which API key its service uses', () => {
+    const logger = createLogger(createCoreService({ apiKey: 'test-key', debug: false }), {
+      level: 'info',
+    });
+    expect(logger.getServiceInfo()).toBe('Logger using API Key: test-key');
   });
 });
