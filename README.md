@@ -12,6 +12,7 @@ A modern TypeScript monorepo starter template with best practices for scalable p
 - 🏎️ [Turborepo](https://turbo.build/repo) for high-performance build system
 - 🛠️ The TypeScript compiler (`tsc`) builds every package; [Rollup](https://rollupjs.org/) builds the script-tag file
 - 🔍 [Biome](https://biomejs.dev/) for fast linting and formatting
+- 🧹 [knip](https://knip.dev/) finds unused files, exports and dependencies
 - ⚙️ [TypeScript](https://www.typescriptlang.org/) 7, with Node and browser presets
 - 🟢 Published packages support Node.js 24 and later, tested on Linux, macOS and Windows
 - 🧪 [Vitest](https://vitest.dev/) for unit testing
@@ -302,6 +303,12 @@ pnpm test
 - **[Are The Types Wrong](https://arethetypeswrong.github.io)** checks that the types resolve for each way someone can import the package (Node ES modules and bundlers; the packages are ESM-only, so CommonJS resolution is not required).
 
 Every package lists `"files": ["dist"]`. Without it, what ships depends on the tool: `npm pack` follows `.gitignore` and leaves out `dist/`, while `pnpm pack` includes it along with build logs and caches.
+
+### Unused Code
+
+`pnpm check:unused` runs [knip](https://knip.dev/), and CI runs it on every push. It fails on files nothing imports, exports nothing uses, dependencies nothing imports, and imports of packages a `package.json` doesn't declare. Exports from a package's entry file count as its public API, so they are never reported.
+
+knip reads most tools' config files itself. `knip.json` adds what it can't find: the browser tests, which the root `playwright.config.ts` matches by a pattern. If knip reports something that is used, add the entry there rather than deleting the code.
 
 ### Issues, Pull Requests and Security Reports
 
