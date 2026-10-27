@@ -1,10 +1,10 @@
 {
-  "name": "@monorepo/cli-example",
+  "name": "@monorepo/cli",
   "version": "0.1.0",
   "description": "Example command-line package: a bin, a Node build target, and a test that runs the built command",
   "type": "module",
   "bin": {
-    "cli-example": "./dist/cli.js"
+    "cli": "./dist/cli.js"
   },
   "exports": {
     ".": {

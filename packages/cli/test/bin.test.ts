@@ -10,7 +10,7 @@ function cli(...args: string[]) {
   return spawnSync(process.execPath, [bin, ...args], { encoding: 'utf8' });
 }
 
-describe('built cli-example bin', () => {
+describe('built cli bin', () => {
   beforeAll(() => {
     if (!existsSync(bin))
       throw new Error(`${bin} is missing: run \`pnpm build\` before the tests.`);

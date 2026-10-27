@@ -9,7 +9,7 @@ type Api = {
 };
 declare global {
   interface Window {
-    BrowserExample?: Api;
+    Web?: Api;
     dismissed?: number;
   }
 }
@@ -24,14 +24,14 @@ async function loadScriptTag(page: Page, css = '') {
 
 test('the script tag exposes the API and does nothing until called', async ({ page }) => {
   await loadScriptTag(page);
-  expect(await page.evaluate(() => typeof window.BrowserExample?.createNotice)).toBe('function');
-  await expect(page.locator('[data-browser-example]')).toHaveCount(0);
+  expect(await page.evaluate(() => typeof window.Web?.createNotice)).toBe('function');
+  await expect(page.locator('[data-web]')).toHaveCount(0);
 });
 
 test('text is shown as text, never parsed as HTML', async ({ page }) => {
   await loadScriptTag(page);
   await page.evaluate(() =>
-    window.BrowserExample?.createNotice({ text: '<img src=x onerror="window.pwned=1">' })
+    window.Web?.createNotice({ text: '<img src=x onerror="window.pwned=1">' })
   );
   await expect(page.getByRole('status')).toHaveText(/<img src=x/);
   expect(
@@ -44,7 +44,7 @@ test('host page CSS cannot restyle the notice', async ({ page }) => {
     page,
     'div, span, button { background: red !important; color: red !important; }'
   );
-  await page.evaluate(() => window.BrowserExample?.createNotice({ text: 'Hello' }));
+  await page.evaluate(() => window.Web?.createNotice({ text: 'Hello' }));
   const notice = page.getByRole('status');
   await expect(notice).toHaveCSS('background-color', 'rgb(20, 32, 46)');
   await expect(notice).toHaveCSS('color', 'rgb(255, 255, 255)');
@@ -54,7 +54,7 @@ test('dismiss is a 44px button that removes the notice once', async ({ page }) =
   await loadScriptTag(page);
   await page.evaluate(() => {
     window.dismissed = 0;
-    window.BrowserExample?.createNotice({
+    window.Web?.createNotice({
       text: 'Hello',
       onDismiss: () => {
         window.dismissed = (window.dismissed ?? 0) + 1;
@@ -72,7 +72,7 @@ test('dismiss is a 44px button that removes the notice once', async ({ page }) =
 
 test('no accessibility violations', async ({ page }) => {
   await loadScriptTag(page);
-  await page.evaluate(() => window.BrowserExample?.createNotice({ text: 'Hello' }));
+  await page.evaluate(() => window.Web?.createNotice({ text: 'Hello' }));
   const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations).toEqual([]);
 });

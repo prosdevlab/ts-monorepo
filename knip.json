@@ -1,7 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "workspaces": {
-    "packages/browser-example": {
+    "packages/web": {
       "entry": ["e2e/**/*.e2e.ts"]
     }
   }

@@ -14,7 +14,7 @@ const defaultIo: Io = {
   err: (line) => process.stderr.write(`${line}\n`),
 };
 
-export const HELP = `Usage: cli-example <command> [options]
+export const HELP = `Usage: cli <command> [options]
 
 Commands:
   greet [--name <name>]   Print a greeting
@@ -30,7 +30,7 @@ export function run(argv: string[], io: Io = defaultIo): number {
     parsed = parse(argv);
   } catch (error) {
     io.err((error as Error).message);
-    io.err('Run "cli-example --help" for usage.');
+    io.err('Run "cli --help" for usage.');
     return 2;
   }
 
@@ -49,7 +49,7 @@ export function run(argv: string[], io: Io = defaultIo): number {
     return 0;
   }
   io.err(`Unknown command "${command}".`);
-  io.err('Run "cli-example --help" for usage.');
+  io.err('Run "cli --help" for usage.');
   return 2;
 }
 

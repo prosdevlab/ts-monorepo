@@ -1,5 +1,5 @@
 {
-  "name": "@monorepo/browser-example",
+  "name": "@monorepo/web",
   "version": "0.1.0",
   "type": "module",
   "sideEffects": false,
@@ -29,7 +29,7 @@
   },
   "size-limit": [
     {
-      "name": "script tag (index.global.js)",
+      "name": "web script tag (index.global.js)",
       "path": "dist/index.global.js",
       "limit": "1 KB"
     }
