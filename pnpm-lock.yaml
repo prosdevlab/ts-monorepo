@@ -208,6 +208,9 @@ importers:
       node:
         specifier: runtime:26.12.1
         version: runtime:26.12.1
+      pkg-pr-new:
+        specifier: 0.0.91
+        version: 0.0.91
       publint:
         specifier: 0.3.25
         version: 0.3.25
@@ -2072,6 +2075,10 @@ packages:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
 
+  pkg-pr-new@0.0.91:
+    resolution: {integrity: sha512-FQPmjspKRKYV4MlHQnun9snJqlYm6Yhmo12x1O3pgE2Akim/y/BZjMOppK//BFdh222WOj6WGqlmeZfrtUtfgQ==}
+    hasBin: true
+
   playwright-core@1.64.1:
     resolution: {integrity: sha512-BC4s8y6SEVA6Q1rSxZTto8hI1KUI3xXlHGZgvGqP4IqPdI/a6FX9H29IDNz7vKo9l21b6LfYosScPL6M3xxyDQ==}
     engines: {node: '>=20'}
@@ -3735,6 +3742,8 @@ snapshots:
   picocolors@1.1.1: {}
 
   picomatch@4.0.7: {}
+
+  pkg-pr-new@0.0.91: {}
 
   playwright-core@1.64.1: {}
 

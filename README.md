@@ -21,6 +21,7 @@ A modern TypeScript monorepo starter template with best practices for scalable p
 - 📝 [Commitlint](https://commitlint.js.org/) with Conventional Commits
 - 🔄 [Changesets](https://github.com/changesets/changesets) for versioning and changelogs
 - 🚀 GitHub Actions for CI/CD with npm publishing
+- 🔗 Installable preview packages for every PR ([pkg.pr.new](https://pkg.pr.new))
 - 🛡️ [zizmor](https://docs.zizmor.sh/) audits the workflows themselves on every PR
 - 🪝 [Husky](https://typicode.github.io/husky/) for Git hooks
 
@@ -211,16 +212,33 @@ Releasing is handled automatically through GitHub Actions when changes are merge
 2. Changesets creates a PR to bump versions and update changelogs
 3. When the PR is merged, packages are published to npm
 
+#### Preview Packages
+
+With previews on, every push to `main` and every PR from a branch in this repository publishes each package to [pkg.pr.new](https://pkg.pr.new). A bot comments the install commands on the PR, so anyone can try a change before it's released:
+
+```bash
+npm i https://pkg.pr.new/<owner>/<repo>/@monorepo/core@<pr-number>
+```
+
+Previews aren't npm releases. They aren't versioned and they don't need an npm account. Dependencies between the packages point at the same preview. PRs from forks never run the preview job, so a stranger's code is never built and published.
+
+To turn previews on:
+
+1. Install the [pkg.pr.new GitHub App](https://github.com/apps/pkg-pr-new) on the repository or organization.
+2. Set the repository variable `PKG_PR_NEW` to `true`: **Settings → Secrets and variables → Actions → Variables**.
+
+Previews include every package that isn't marked `"private": true`. The repository's code is public on pkg.pr.new, so leave previews off for a private repository.
+
 #### Setting Up npm Publishing
 
 Packages publish with **npm trusted publishing**: GitHub Actions proves its identity to npm for each release, so no npm token is stored anywhere, and each version gets a **provenance** statement linking it to the commit and workflow that built it (for public packages from public repositories).
 
-By default, all packages are `"private": true`, so the release workflow does nothing. To publish a package:
+The release workflow never publishes until the repository variable `NPM_PUBLISH` is `true`, so a copy of the template can't publish by accident. To publish:
 
-1. In its `package.json`, set `"private": false` and add `"publishConfig": { "access": "public" }`. Use a name that's free on npm, or a scope you own.
+1. Give each package a name that's free on npm, or use a scope you own. Mark any package that must never publish `"private": true`.
 2. On npmjs.com, open the package's **Settings → Trusted publishing** and add a GitHub Actions publisher: your user or organization, this repository, workflow file `ci.yml`, environment `npm`. (Publishing runs in `release.yml`, which `ci.yml` calls, and npm checks the calling workflow.) A new trusted publisher must complete its first publish within 2 days. If npm won't let you configure a package that doesn't exist yet, publish the first version by hand (`npm publish --access public`, with two-factor authentication), then add the publisher.
 3. In the same settings, under **Publishing access**, choose **Require two-factor authentication and disallow tokens**. Trusted publishing keeps working; a leaked token can't publish.
-4. In GitHub, under **Settings → Actions → General**, enable **Allow GitHub Actions to create and approve pull requests**, so the workflow can open the version PR. Optionally, add required reviewers to the `npm` environment (**Settings → Environments**) to approve each publish.
+4. In GitHub, under **Settings → Actions → General**, enable **Allow GitHub Actions to create and approve pull requests**, so the workflow can open the version PR. Then set the repository variable `NPM_PUBLISH` to `true` (**Settings → Secrets and variables → Actions → Variables**). Optionally, add required reviewers to the `npm` environment (**Settings → Environments**) to approve each publish.
 
 How a release runs: CI's `release` job calls `.github/workflows/release.yml` on pushes to `main`, after every other CI job passes, against the same commit. Pull requests never reach it, so code from a fork never runs with write access.
 
@@ -240,7 +258,7 @@ How a release runs: CI's `release` job calls `.github/workflows/release.yml` on 
 
 1. **select-mode** reads the changesets: version, publish, or nothing.
 2. **version** (changesets present) opens or updates the "version packages" PR. It can write to the repository but cannot reach npm.
-3. **pack** (version PR merged) builds, runs the package checks, and packs tarballs, with read-only access.
+3. **pack** (version PR merged, and `NPM_PUBLISH` is `true`) builds, runs the package checks, and packs tarballs, with read-only access.
 4. **publish** publishes those tarballs. It is the only job that can get npm credentials, and it never builds.
 
 ## Working with this Monorepo

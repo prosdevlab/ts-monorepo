@@ -1,7 +1,7 @@
 name: Release
 
 # Called by CI's release job on pushes to main, after every check passes (workflow_run would also fire for fork PRs).
-# Packages are private by default, so this selects "none" until a package sets "private": false. No npm token exists.
+# Publishes only when the repository variable NPM_PUBLISH is 'true', so copies of the template never publish by accident.
 on:
   workflow_call:
   workflow_dispatch:
@@ -62,7 +62,8 @@ jobs:
   # Version PR merged: build and pack, with read-only access.
   pack:
     needs: select-mode
-    if: needs.select-mode.outputs.mode == 'publish'
+    # Off until the repository variable NPM_PUBLISH is 'true' (README "Setting Up npm Publishing"); no npm token exists.
+    if: needs.select-mode.outputs.mode == 'publish' && vars.NPM_PUBLISH == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
