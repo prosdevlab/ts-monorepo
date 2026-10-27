@@ -29,6 +29,7 @@
       "dependsOn": ["build"],
       "outputs": []
     },
+    // example:web
     "test:browser": {
       "dependsOn": ["build"],
       "cache": false,
@@ -37,5 +38,6 @@
     "size": {
       "dependsOn": ["build"]
     }
+    // /example:web
   }
 }

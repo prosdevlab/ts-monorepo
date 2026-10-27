@@ -10,14 +10,22 @@ A modern TypeScript monorepo starter template with best practices for scalable p
 
 - 📦 [PNPM](https://pnpm.io/) 12 for package management, and to pin the Node.js version
 - 🏎️ [Turborepo](https://turbo.build/repo) for high-performance build system
-- 🛠️ The TypeScript compiler (`tsc`) builds every package; [Rollup](https://rollupjs.org/) builds the script-tag file
+- 🛠️ The TypeScript compiler (`tsc`) builds every package
+<!-- example:web -->
+- 📜 [Rollup](https://rollupjs.org/) builds the script-tag file
+<!-- /example:web -->
 - 🔍 [Biome](https://biomejs.dev/) for fast linting and formatting
 - 🧹 [knip](https://knip.dev/) finds unused files, exports and dependencies
-- ⚙️ [TypeScript](https://www.typescriptlang.org/) 7, with Node and browser presets
+- ⚙️ [TypeScript](https://www.typescriptlang.org/) 7, with a Node preset
+<!-- example:web -->
+- 🖥️ A browser TypeScript preset (DOM)
+<!-- /example:web -->
 - 🟢 Published packages support Node.js 24 and later, tested on Linux, macOS and Windows
 - 🧪 [Vitest](https://vitest.dev/) for unit testing
+<!-- example:web -->
 - 🌐 [Playwright](https://playwright.dev/) browser tests with [axe](https://github.com/dequelabs/axe-core-npm) accessibility checks
 - 📏 [size-limit](https://github.com/ai/size-limit) budgets that fail CI when a browser build grows
+<!-- /example:web -->
 - 📝 [Commitlint](https://commitlint.js.org/) with Conventional Commits
 - 🔄 [Changesets](https://github.com/changesets/changesets) for versioning and changelogs
 - 🚀 GitHub Actions for CI/CD with npm publishing
@@ -32,11 +40,7 @@ ts-monorepo-starter/
 ├── .changeset/          # Changesets configuration
 ├── .github/             # Workflows, issue forms, PR template
 ├── .husky/              # Git hooks
-├── packages/            # All packages
-│   ├── shared/          # Shared package: core service and logger
-│   ├── lib/             # Library package (depends on shared)
-│   ├── web/             # Browser library example (script tag + ES module)
-│   └── cli/             # Command-line package example (bin, Node target)
+├── packages/            # All packages (the examples are listed below)
 ├── .editorconfig        # Editor defaults matching Biome's formatter
 ├── AGENTS.md            # Instructions for coding agents (CLAUDE.md imports it)
 ├── biome.json           # Biome configuration
@@ -50,19 +54,42 @@ ts-monorepo-starter/
 └── vitest.config.ts     # Vitest config
 ```
 
+The example packages:
+
+<!-- example:lib -->
+- `packages/shared`: core service and logger
+- `packages/lib`: a library package that depends on `shared`
+<!-- /example:lib -->
+<!-- example:web -->
+- `packages/web`: a browser library (script tag and ES module)
+<!-- /example:web -->
+<!-- example:cli -->
+- `packages/cli`: a command-line package (`bin`, Node target)
+<!-- /example:cli -->
+
 ## How It Fits Together
 
 ### Packages and build order
 
+<!-- example:lib -->
 ```
   ┌──────────┐         ┌──────────┐
   │  shared  │ ──────▶ │   lib    │
   └──────────┘         └──────────┘
-
-  web      cli         no internal dependencies
 ```
 
-An arrow points from a package to a package that depends on it. `pnpm build` builds `shared`, then `lib` (Turborepo's `dependsOn: ["^build"]`); the standalone packages build alongside. Typecheck reads each dependency's built `dist/`, so build before typechecking. Unit tests import sources directly, through the aliases in `vitest.config.ts`.
+An arrow points from a package to a package that depends on it. `pnpm build` builds `shared`, then `lib` (Turborepo's `dependsOn: ["^build"]`). Unit tests import sources directly, through the aliases in `vitest.config.ts`.
+
+<!-- /example:lib -->
+<!-- example:web -->
+`web` has no internal dependencies, so it builds alongside the others.
+
+<!-- /example:web -->
+<!-- example:cli -->
+`cli` has no internal dependencies, so it builds alongside the others.
+
+<!-- /example:cli -->
+Typecheck reads each dependency's built `dist/`, so build before typechecking.
 
 ### What a build produces
 
@@ -70,13 +97,22 @@ An arrow points from a package to a package that depends on it. `pnpm build` bui
 every package
   src/*.ts ──── tsc -p tsconfig.json ────▶ dist/*.js     ES modules, one per source file
                                            dist/*.d.ts   types, with declaration maps
+```
 
+<!-- example:web -->
+```
 web, one more step
   dist/index.js ──── Rollup + terser ────▶ dist/index.global.js  (minified, window.Web)
+```
 
+<!-- /example:web -->
+<!-- example:cli -->
+```
 cli, one more step
   dist/cli.js ─────── mark executable ───▶ command (keeps #!/usr/bin/env node)
 ```
+
+<!-- /example:cli -->
 
 ### Where versions come from
 
@@ -141,7 +177,7 @@ Each version is set in one place, and the tools on the right read it from there.
 pnpm test
 
 # Run tests in watch mode
-pnpm -F "@monorepo/shared" test:watch
+pnpm -F "<package-name>" test:watch
 ```
 
 #### Linting and Formatting
@@ -163,10 +199,10 @@ Every package builds with the TypeScript compiler (`tsc -p tsconfig.json`). No b
 pnpm build
 
 # Build a specific package
-pnpm -F "@monorepo/shared" build
+pnpm -F "<package-name>" build
 
 # Watch mode for development
-pnpm -F "@monorepo/shared" dev
+pnpm -F "<package-name>" dev
 ```
 
 **Build Configuration:**
@@ -210,7 +246,7 @@ Releasing is handled automatically through GitHub Actions when changes are merge
 With previews on, every push to `main` and every PR from a branch in this repository publishes each package to [pkg.pr.new](https://pkg.pr.new). A bot comments the install commands on the PR, so anyone can try a change before it's released:
 
 ```bash
-npm i https://pkg.pr.new/<owner>/<repo>/@monorepo/shared@<pr-number>
+npm i https://pkg.pr.new/<owner>/<repo>/@monorepo/<package>@<pr-number>
 ```
 
 Previews aren't npm releases. They aren't versioned and they don't need an npm account. Dependencies between the packages point at the same preview. PRs from forks never run the preview job, so a stranger's code is never built and published.
@@ -258,7 +294,19 @@ How a release runs: CI's `release` job calls `.github/workflows/release.yml` on 
 
 ### Adding a New Package
 
-Copy the example closest to what you're building (`shared` for a plain library, `web` for web pages, `cli` for a command), then rename it. Keep `"type": "module"`, the `exports` map, `"files": ["dist"]` and the `check:package` script: `pnpm check:packages` fails without them. Run `pnpm install` to link it. If other packages import it from source, add a `vitest.config.ts` alias and a root `tsconfig.json` path.
+Copy the example closest to what you're building, then rename it:
+
+<!-- example:lib -->
+- `packages/shared` for a plain library
+<!-- /example:lib -->
+<!-- example:web -->
+- `packages/web` for a library that runs in web pages
+<!-- /example:web -->
+<!-- example:cli -->
+- `packages/cli` for a command people run
+<!-- /example:cli -->
+
+Keep `"type": "module"`, the `exports` map, `"files": ["dist"]` and the `check:package` script: `pnpm check:packages` fails without them. Run `pnpm install` to link it. If other packages import it from source, add a `vitest.config.ts` alias and a root `tsconfig.json` path.
 
 ### Package Interdependencies
 
@@ -266,10 +314,11 @@ Packages can depend on each other using the workspace protocol:
 
 ```json
 "dependencies": {
-  "@monorepo/shared": "workspace:*"
+  "@monorepo/<package>": "workspace:*"
 }
 ```
 
+<!-- example:web -->
 ### Browser Libraries
 
 `packages/web` shows the setup for a library that runs in web pages. Copy it as a starting point.
@@ -289,7 +338,9 @@ pnpm --filter @monorepo/web exec playwright install chromium
 pnpm test:browser
 pnpm size
 ```
+<!-- /example:web -->
 
+<!-- example:cli -->
 ### Command-Line Packages
 
 `packages/cli` shows the setup for a package people run as a command (`npx your-tool`). Copy it as a starting point.
@@ -305,6 +356,7 @@ pnpm build
 node packages/cli/dist/cli.js greet --name you
 pnpm test
 ```
+<!-- /example:cli -->
 
 ### Package Checks
 
@@ -319,7 +371,7 @@ Every package lists `"files": ["dist"]`. Without it, what ships depends on the t
 
 `pnpm check:unused` runs [knip](https://knip.dev/), and CI runs it on every push. It fails on files nothing imports, exports nothing uses, dependencies nothing imports, and imports of packages a `package.json` doesn't declare. Exports from a package's entry file count as its public API, so they are never reported.
 
-knip reads most tools' config files itself, including each package's `playwright.config.ts`, so the template needs no `knip.json`. If knip reports something that is used, add a `knip.json` entry for it rather than deleting the code.
+knip reads most tools' config files itself, so the template needs no `knip.json`. If knip reports something that is used, add a `knip.json` entry for it rather than deleting the code.
 
 ### Issues, Pull Requests and Security Reports
 
