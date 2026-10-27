@@ -27,7 +27,7 @@ A modern TypeScript monorepo starter template with best practices for scalable p
 ```
 ts-monorepo/
 ├── .changeset/          # Changesets configuration
-├── .github/             # GitHub Actions workflows
+├── .github/             # Workflows, issue forms, PR template
 ├── .husky/              # Git hooks
 ├── packages/            # All packages
 │   ├── core/            # Core package
@@ -35,12 +35,14 @@ ts-monorepo/
 │   ├── feature-a/       # Feature package
 │   ├── browser-example/ # Browser library example (script tag + ES module)
 │   └── cli-example/     # Command-line package example (bin, Node target)
+├── .editorconfig        # Editor defaults matching Biome's formatter
 ├── AGENTS.md            # Instructions for coding agents (CLAUDE.md imports it)
 ├── biome.json           # Biome configuration
 ├── commitlint.config.js # Commitlint configuration
 ├── package.json         # Root package.json
 ├── pnpm-workspace.yaml  # PNPM workspace config (3-day minimum release age)
 ├── renovate.json        # Dependency update PRs (once releases are 3 days old)
+├── SECURITY.md          # How to report a vulnerability privately
 ├── playwright.config.ts # Browser tests (packages/*/e2e/*.e2e.ts)
 ├── tsconfig.json        # Base TypeScript config (Node)
 ├── tsconfig.browser.json # Browser TypeScript config (DOM, ES2020)
@@ -299,6 +301,12 @@ pnpm test
 - **[Are The Types Wrong](https://arethetypeswrong.github.io)** checks that the types resolve for each way someone can import the package (Node ES modules and bundlers; the packages are ESM-only, so CommonJS resolution is not required).
 
 Every package lists `"files": ["dist"]`. Without it, what ships depends on the tool: `npm pack` follows `.gitignore` and leaves out `dist/`, while `pnpm pack` includes it along with build logs and caches.
+
+### Issues, Pull Requests and Security Reports
+
+- **Issue forms** (`.github/ISSUE_TEMPLATE/`): bug reports ask for the package and version, steps to reproduce, and the environment. Blank issues are turned off.
+- **A PR template** (`.github/PULL_REQUEST_TEMPLATE.md`) asks what changes and why, and lists the checks and the changeset.
+- **`SECURITY.md`** sends vulnerability reports to GitHub's private reporting. Turn it on in your repository: **Settings → Advanced Security → Private vulnerability reporting**. Then set the reply time in `SECURITY.md` to one you can keep.
 
 ### Dependency Updates
 
