@@ -19,9 +19,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.json && rollup -c",
+    "build": "pnpm run clean && tsc -p tsconfig.json && rollup -c",
     "dev": "tsc -p tsconfig.json --watch",
-    "clean": "rm -rf dist",
+    "clean": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
     "typecheck": "tsc --noEmit && tsc -p e2e/tsconfig.json",
     "lint": "biome lint ./src ./e2e",
     "format": "biome format --write ./src ./e2e",

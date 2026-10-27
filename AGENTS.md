@@ -9,7 +9,7 @@ A modern TypeScript monorepo using pnpm workspaces, Turborepo for build orchestr
 **Tech Stack:**
 
 - Package manager: pnpm 12.15.0 (pinned via `packageManager`)
-- Language: TypeScript 7.0.2, with Node 26 (`tsconfig.json`) and browser (`tsconfig.browser.json`) presets
+- Language: TypeScript 7.0.2, with Node 24 (`tsconfig.json`) and browser (`tsconfig.browser.json`) presets
 - Build: `tsc` for every package; Rollup bundles the browser example's script-tag file
 - Build system: Turborepo
 - Linter/Formatter: Biome
@@ -17,7 +17,8 @@ A modern TypeScript monorepo using pnpm workspaces, Turborepo for build orchestr
 - Size budgets: size-limit, per browser package
 - CI/CD: GitHub Actions (separate CI and Release workflows)
 - Versioning: Changesets
-- Node.js: >= 26 (LTS; `devEngines.runtime` pins 26.12.1: pnpm downloads it locally, and CI reads the same version from package.json)
+- Node.js for development: >= 26 (LTS; `devEngines.runtime` pins 26.12.1: pnpm downloads it locally, and CI reads the same version from package.json)
+- Node.js for published packages: >= 24 (`engines.node`); CI runs the unit tests on Node 24 and 26, on Linux, macOS and Windows
 
 ## Repository Structure
 
@@ -149,6 +150,8 @@ chore: update dependencies
 - Triggers: Push to main OR Pull Request to main
 - Node version: read from `package.json` (`devEngines.runtime` pins 26.12.1)
 - Steps: Install → Lint → Build → Typecheck → Test → Size budget → Package checks → Browser tests
+- `compat` job: build, then the unit tests on Node 24 and 26 × Linux, macOS, Windows. It calls Vitest with `node` directly,
+  because pnpm would run it on the pinned Node 26
 - Least-privilege `permissions`; every action pinned to a commit SHA with the version in a comment
 - **Important:** Build runs BEFORE typecheck (required for type definitions)
 
@@ -170,8 +173,9 @@ Copy the example closest to what you're building, then rename it:
 
 Every package keeps these, or `pnpm check:packages` fails or it publishes broken:
 
-- a `build` script that deletes `dist` and runs `tsc -p tsconfig.json`
-
+- a `build` script that runs `pnpm run clean` (which deletes `dist`) and then `tsc -p tsconfig.json`. Scripts use `node -e`
+  instead of `rm` or `chmod`, so they also run on Windows
+- `"engines": { "node": ">=24" }` for packages that run on Node, and `@types/node` 24.x if the package needs it
 - `"type": "module"` and an `exports` map whose `types` and `import` point into `dist/`
 - `"files": ["dist"]`: without it, `npm pack` follows `.gitignore` and ships no `dist/`
 - `"private": true` until you intend to publish
@@ -302,8 +306,9 @@ pnpm list --depth 0  # See all workspace packages
   fix, with the advisory linked, removed once it is 3 days old (README "Dependency Updates").
 - Renovate (`renovate.json`) proposes updates once they're 3 days old, labels security fixes `security`, and keeps
   GitHub Actions pinned to commit SHAs. Its `minimumReleaseAge` must equal pnpm's.
-- `@types/node` stays on the Node major `devEngines.runtime` pins (a Renovate rule enforces it). Types for a newer Node let code
-  typecheck against APIs the pinned runtime doesn't have; upgrade Node and `@types/node` together.
+- `@types/node` matches the Node major the code runs on (Renovate rules enforce it): 26.x in the root `package.json`, for the
+  tooling on the pinned runtime; 24.x in packages, for the oldest `engines.node`. Types for a newer Node let code typecheck
+  against APIs its users' Node doesn't have; raise them together.
 
 ## Versioning Strategy
 
