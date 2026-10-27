@@ -28,7 +28,7 @@ A modern TypeScript monorepo starter template with best practices for scalable p
 ## Project Structure
 
 ```
-ts-monorepo/
+ts-monorepo-starter/
 ├── .changeset/          # Changesets configuration
 ├── .github/             # Workflows, issue forms, PR template
 ├── .husky/              # Git hooks
@@ -117,8 +117,8 @@ Each version is set in one place, and the tools on the right read it from there.
 
 1. Clone this repository
    ```bash
-   git clone https://github.com/yourusername/ts-monorepo.git
-   cd ts-monorepo
+   git clone https://github.com/yourusername/ts-monorepo-starter.git
+   cd ts-monorepo-starter
    ```
 
 2. Install pnpm 12, once per machine
