@@ -28,6 +28,13 @@
     "check:package": {
       "dependsOn": ["build"],
       "outputs": []
+    },
+    "test:browser": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "size": {
+      "dependsOn": ["build"]
     }
   }
 }

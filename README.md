@@ -45,9 +45,7 @@ ts-monorepo-starter/
 ├── pnpm-workspace.yaml  # PNPM workspace config (3-day minimum release age)
 ├── renovate.json        # Dependency update PRs (once releases are 3 days old)
 ├── SECURITY.md          # How to report a vulnerability privately
-├── playwright.config.ts # Browser tests (packages/*/e2e/*.e2e.ts)
 ├── tsconfig.json        # Base TypeScript config (Node)
-├── tsconfig.browser.json # Browser TypeScript config (DOM, ES2020)
 ├── turbo.json           # Turborepo config
 └── vitest.config.ts     # Vitest config
 ```
@@ -279,12 +277,13 @@ Packages can depend on each other using the workspace protocol:
 - **Two builds**: `tsc` writes the ES module and its types for bundlers. [Rollup](https://rollupjs.org/) (`rollup.config.js`) then bundles that output into a minified script-tag file (`dist/index.global.js`) that exposes a global. Rollup reads JavaScript, so it needs no TypeScript plugin, only terser to minify.
 - **Nothing runs at import.** Work starts when the page calls the API, so importing the package is always safe.
 - **Isolation and safety:** the example renders in a shadow root, so host page CSS can't restyle it, and treats text as text, never HTML.
-- **Browser tests** in `e2e/*.e2e.ts` load the built script tag into a real page, including an [axe](https://github.com/dequelabs/axe-core-npm) accessibility check.
+- **Browser tests** in `e2e/*.e2e.ts`, configured by the package's own `playwright.config.ts`, load the built script tag into a real page, including an [axe](https://github.com/dequelabs/axe-core-npm) accessibility check.
+- **Own tooling:** Playwright, axe and size-limit are this package's dev dependencies, and its `tsconfig.json` carries the browser compiler options (DOM, ES2020), so deleting the package removes them.
 - **Size budget** in the package's `size-limit` field. CI fails if the script-tag build grows past it.
 
 ```bash
 # One-time: install the browser Playwright uses
-pnpm exec playwright install chromium
+pnpm --filter @monorepo/web exec playwright install chromium
 
 # Build, then run browser tests and the size budget
 pnpm build
@@ -321,7 +320,7 @@ Every package lists `"files": ["dist"]`. Without it, what ships depends on the t
 
 `pnpm check:unused` runs [knip](https://knip.dev/), and CI runs it on every push. It fails on files nothing imports, exports nothing uses, dependencies nothing imports, and imports of packages a `package.json` doesn't declare. Exports from a package's entry file count as its public API, so they are never reported.
 
-knip reads most tools' config files itself. `knip.json` adds what it can't find: the browser tests, which the root `playwright.config.ts` matches by a pattern. If knip reports something that is used, add the entry there rather than deleting the code.
+knip reads most tools' config files itself, including each package's `playwright.config.ts`, so the template needs no `knip.json`. If knip reports something that is used, add a `knip.json` entry for it rather than deleting the code.
 
 ### Issues, Pull Requests and Security Reports
 

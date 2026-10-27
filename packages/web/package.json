@@ -25,7 +25,8 @@
     "lint": "biome lint ./src ./e2e",
     "format": "biome format --write ./src ./e2e",
     "size": "size-limit",
-    "check:package": "publint --strict && attw --pack . --profile esm-only"
+    "check:package": "publint --strict && attw --pack . --profile esm-only",
+    "test:browser": "playwright test"
   },
   "size-limit": [
     {
@@ -35,8 +36,12 @@
     }
   ],
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.64.1",
     "@rollup/plugin-terser": "1.0.2",
+    "@size-limit/file": "14.3.0",
     "rollup": "4.65.0",
+    "size-limit": "14.3.0",
     "typescript": "7.0.2"
   }
 }
