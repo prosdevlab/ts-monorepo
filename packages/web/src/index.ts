@@ -27,7 +27,7 @@ const STYLES = `
 
 export function createNotice(options: NoticeOptions): Notice {
   const host = document.createElement('div');
-  host.setAttribute('data-browser-example', '');
+  host.setAttribute('data-web', '');
   const root = host.attachShadow({ mode: 'open' });
 
   const style = document.createElement('style');

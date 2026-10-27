@@ -35,8 +35,8 @@ ts-monorepo-starter/
 ├── packages/            # All packages
 │   ├── shared/          # Shared package: core service and logger
 │   ├── lib/             # Library package (depends on shared)
-│   ├── browser-example/ # Browser library example (script tag + ES module)
-│   └── cli-example/     # Command-line package example (bin, Node target)
+│   ├── web/             # Browser library example (script tag + ES module)
+│   └── cli/             # Command-line package example (bin, Node target)
 ├── .editorconfig        # Editor defaults matching Biome's formatter
 ├── AGENTS.md            # Instructions for coding agents (CLAUDE.md imports it)
 ├── biome.json           # Biome configuration
@@ -61,7 +61,7 @@ ts-monorepo-starter/
   │  shared  │ ──────▶ │   lib    │
   └──────────┘         └──────────┘
 
-  browser-example     cli-example        no internal dependencies
+  web      cli         no internal dependencies
 ```
 
 An arrow points from a package to a package that depends on it. `pnpm build` builds `shared`, then `lib` (Turborepo's `dependsOn: ["^build"]`); the standalone packages build alongside. Typecheck reads each dependency's built `dist/`, so build before typechecking. Unit tests import sources directly, through the aliases in `vitest.config.ts`.
@@ -73,10 +73,10 @@ every package
   src/*.ts ──── tsc -p tsconfig.json ────▶ dist/*.js     ES modules, one per source file
                                            dist/*.d.ts   types, with declaration maps
 
-browser-example, one more step
-  dist/index.js ──── Rollup + terser ────▶ dist/index.global.js  (minified, window.BrowserExample)
+web, one more step
+  dist/index.js ──── Rollup + terser ────▶ dist/index.global.js  (minified, window.Web)
 
-cli-example, one more step
+cli, one more step
   dist/cli.js ─────── mark executable ───▶ command (keeps #!/usr/bin/env node)
 ```
 
@@ -260,7 +260,7 @@ How a release runs: CI's `release` job calls `.github/workflows/release.yml` on 
 
 ### Adding a New Package
 
-Copy the example closest to what you're building (`shared` for a plain library, `browser-example` for web pages, `cli-example` for a command), then rename it. Keep `"type": "module"`, the `exports` map, `"files": ["dist"]` and the `check:package` script: `pnpm check:packages` fails without them. Run `pnpm install` to link it. If other packages import it from source, add a `vitest.config.ts` alias and a root `tsconfig.json` path.
+Copy the example closest to what you're building (`shared` for a plain library, `web` for web pages, `cli` for a command), then rename it. Keep `"type": "module"`, the `exports` map, `"files": ["dist"]` and the `check:package` script: `pnpm check:packages` fails without them. Run `pnpm install` to link it. If other packages import it from source, add a `vitest.config.ts` alias and a root `tsconfig.json` path.
 
 ### Package Interdependencies
 
@@ -274,7 +274,7 @@ Packages can depend on each other using the workspace protocol:
 
 ### Browser Libraries
 
-`packages/browser-example` shows the setup for a library that runs in web pages. Copy it as a starting point.
+`packages/web` shows the setup for a library that runs in web pages. Copy it as a starting point.
 
 - **Two builds**: `tsc` writes the ES module and its types for bundlers. [Rollup](https://rollupjs.org/) (`rollup.config.js`) then bundles that output into a minified script-tag file (`dist/index.global.js`) that exposes a global. Rollup reads JavaScript, so it needs no TypeScript plugin, only terser to minify.
 - **Nothing runs at import.** Work starts when the page calls the API, so importing the package is always safe.
@@ -294,7 +294,7 @@ pnpm size
 
 ### Command-Line Packages
 
-`packages/cli-example` shows the setup for a package people run as a command (`npx your-tool`). Copy it as a starting point.
+`packages/cli` shows the setup for a package people run as a command (`npx your-tool`). Copy it as a starting point.
 
 - **A `bin` entry** in `package.json` points at `dist/cli.js`. The source starts with `#!/usr/bin/env node`; `tsc` keeps that line, and the build script marks the file executable (with Node's `fs.chmodSync`, so it also builds on Windows).
 - **Runs on Node 24 and later**: `engines.node` is `>=24`, the root `tsconfig.json` extends `@tsconfig/node24` so code can't use newer JavaScript APIs, and the package's `@types/node` is 24.x so it can't use newer Node APIs. CI runs the tests on Node 24 and 26.
@@ -304,7 +304,7 @@ pnpm size
 
 ```bash
 pnpm build
-node packages/cli-example/dist/cli.js greet --name you
+node packages/cli/dist/cli.js greet --name you
 pnpm test
 ```
 

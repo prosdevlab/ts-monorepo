@@ -26,8 +26,8 @@ A modern TypeScript monorepo using pnpm workspaces, Turborepo for build orchestr
 packages/
 ├── shared/        # Shared package: core service and logger, with tests
 ├── lib/           # Library package (depends on shared)
-├── browser-example/ # Browser library: ES module + script-tag build, e2e tests, size budget
-└── cli-example/     # Command-line package: bin entry, Node target, test that runs the built command
+├── web/           # Browser library: ES module + script-tag build, e2e tests, size budget
+└── cli/           # Command-line package: bin entry, Node target, test that runs the built command
 ```
 
 Each package has its own `package.json`, `tsconfig.json`, and `src/` directory. Packages aren't marked private, so previews include them. Mark a package `"private": true` only if it must never be published or previewed.
@@ -100,7 +100,7 @@ Tests use Vitest with a centralized configuration at the root (`vitest.config.ts
 - Test files: `**/*.test.ts` or `**/*.spec.ts` in `packages/*/src/`
 - Run from root: `pnpm test` (NOT `turbo test`)
 - The test script in root package.json runs `vitest run`, not `turbo test`
-- Unit tests live next to source (`packages/*/src/*.test.ts`); `packages/cli-example/test/bin.test.ts` runs the *built* command, so `pnpm build` must run before `pnpm test`
+- Unit tests live next to source (`packages/*/src/*.test.ts`); `packages/cli/test/bin.test.ts` runs the *built* command, so `pnpm build` must run before `pnpm test`
 
 **When adding tests:**
 
@@ -179,8 +179,8 @@ chore: update dependencies
 Copy the example closest to what you're building, then rename it:
 
 - `packages/shared/`: a plain library (ES module and types)
-- `packages/browser-example/`: a library that runs in web pages (script-tag build, browser tests, size budget)
-- `packages/cli-example/`: a command people run (`bin`, Node target, test of the built command)
+- `packages/web/`: a library that runs in web pages (script-tag build, browser tests, size budget)
+- `packages/cli/`: a command people run (`bin`, Node target, test of the built command)
 
 Every package keeps these, or `pnpm check:packages` fails or it publishes broken:
 
