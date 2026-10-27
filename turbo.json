@@ -31,7 +31,8 @@
     },
     "test:browser": {
       "dependsOn": ["build"],
-      "cache": false
+      "cache": false,
+      "passThroughEnv": ["CI", "PLAYWRIGHT_*"]
     },
     "size": {
       "dependsOn": ["build"]

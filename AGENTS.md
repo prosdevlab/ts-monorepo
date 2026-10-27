@@ -53,7 +53,7 @@ pnpm test
 # Watch mode for tests
 pnpm test:watch
 
-# Browser tests (Playwright; run after build; first time: pnpm --filter @monorepo/web exec playwright install chromium; runs through turbo)
+# Browser tests (Playwright; runs through turbo, which builds first; first time: pnpm --filter @monorepo/web exec playwright install chromium)
 pnpm test:browser
 
 # Size budgets for browser builds (runs through turbo, which builds first)
