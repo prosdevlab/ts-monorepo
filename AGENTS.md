@@ -140,10 +140,17 @@ pnpm check:unused
 pnpm build
 pnpm typecheck
 pnpm test
-pnpm size
 pnpm check:packages
+```
+
+<!-- example:web -->
+With the web example, also run:
+
+```bash
+pnpm size
 pnpm test:browser
 ```
+<!-- /example:web -->
 
 <!-- example:template-only -->
 In the template repository, CI also runs `node scripts/check-examples.mjs` after lint.
@@ -166,8 +173,8 @@ and audit it with [zizmor](https://docs.zizmor.sh/) (`zizmor .github/workflows`)
 type(scope): description
 
 # Examples:
-feat(shared): add new authentication method
-fix(lib): resolve import path issue
+feat(api): add new authentication method
+fix(core): resolve import path issue
 chore: update dependencies
 ```
 
