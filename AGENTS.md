@@ -135,6 +135,7 @@ Run the same sequence CI runs, in this order, and report any failure with its ou
 
 ```bash
 pnpm install --frozen-lockfile
+pnpm audit --audit-level high
 pnpm lint
 pnpm check:unused
 pnpm build
@@ -184,7 +185,7 @@ chore: update dependencies
 
 - Triggers: Push to main OR Pull Request to main
 - Node version: read from `package.json` (`devEngines.runtime` pins 26.12.1)
-- Steps: Install → Lint → Unused code → Build → Typecheck → Test → Package checks
+- Steps: Install → Audit → Lint → Unused code → Build → Typecheck → Test → Package checks
 <!-- example:web -->
 - Web steps: Size budget and Browser tests
 <!-- /example:web -->
@@ -194,7 +195,7 @@ chore: update dependencies
 - `compat` job: build, then the unit tests on Node 24 and 26 × Linux, macOS, Windows. It calls Vitest with `node` directly,
   because pnpm would run it on the pinned Node 26
 - Least-privilege `permissions`; every action pinned to a commit SHA with the version in a comment
-- `workflows` job: zizmor (version pinned in `ZIZMOR_VERSION`, updated by Renovate) audits every workflow and fails on
+- `workflows` job: zizmor (version pinned in `ZIZMOR_VERSION`, raised by hand) audits every workflow and fails on
   any finding. Suppress one only with an inline `# zizmor: ignore[rule]` and a comment saying why it doesn't apply
 - A new push to a PR cancels that PR's older run; runs on `main` always finish, because they release
 - `preview` job: publishes every package as an installable preview (pkg.pr.new) for pushes to main and same-repo PRs,
@@ -360,13 +361,15 @@ pnpm list --depth 0  # See all workspace packages
 - Never commit `.env` files or secrets
 - No npm token is stored: publishing uses npm trusted publishing (OIDC), with provenance
 - Publishing is off until the repository variable `NPM_PUBLISH` is `true`. Previews (`PKG_PR_NEW`) never run for fork PRs
-- Review dependencies regularly: `pnpm audit`
+- CI fails on high or critical advisories (`pnpm audit --audit-level high`); run `pnpm audit` to see every severity.
+  GitHub's Dependabot alerts can't read pnpm 12's two-document lockfile, so they miss these dependencies
 - Nothing newer than 3 days installs: `minimumReleaseAge` in `pnpm-workspace.yaml` (minutes).
 - Agents never add `minimumReleaseAgeExclude` entries. A person may approve one exact version for an urgent security
   fix, with the advisory linked, removed once it is 3 days old (README "Dependency Updates").
-- Renovate (`renovate.json`) proposes updates once they're 3 days old, labels security fixes `security`, and keeps
-  GitHub Actions pinned to commit SHAs. Its `minimumReleaseAge` must equal pnpm's.
-- `@types/node` matches the Node major the code runs on (Renovate rules enforce it): 26.x in the root `package.json`, for the
+- Dependabot (`.github/dependabot.yml`) proposes updates once they're 3 days old and keeps GitHub Actions pinned to commit
+  SHAs. Its `cooldown` must equal pnpm's `minimumReleaseAge`. It doesn't update `devEngines.runtime`, `ZIZMOR_VERSION` or
+  `@types/node` majors: those are raised by hand.
+- `@types/node` matches the Node major the code runs on (Dependabot skips its majors): 26.x in the root `package.json`, for the
   tooling on the pinned runtime; 24.x in packages, for the oldest `engines.node`. Types for a newer Node let code typecheck
   against APIs its users' Node doesn't have; raise them together.
 

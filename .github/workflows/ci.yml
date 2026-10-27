@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Actions are pinned to commit SHAs (version in the comment); Renovate keeps both current.
+      # Actions are pinned to commit SHAs (version in the comment); Dependabot keeps both current.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -37,6 +37,10 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      # Known advisories, read from the npm registry. GitHub's Dependabot alerts can't read pnpm 12's lockfile.
+      - name: Audit dependencies
+        run: pnpm audit --audit-level high
 
       - name: Lint
         run: pnpm lint
@@ -131,7 +135,7 @@ jobs:
     permissions:
       contents: read
     env:
-      # renovate: datasource=github-releases depName=zizmorcore/zizmor extractVersion=^v(?<version>.+)$
+      # Raised by hand (Dependabot can't), to a zizmor release at least 3 days old.
       ZIZMOR_VERSION: 1.31.1
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
