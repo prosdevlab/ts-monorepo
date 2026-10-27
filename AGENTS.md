@@ -4,7 +4,7 @@ This is a TypeScript monorepo starter template: create a repository from it, the
 
 ## Project Overview
 
-A modern TypeScript monorepo using pnpm workspaces, Turborepo for build orchestration, Biome for linting/formatting, Vitest for testing, and Changesets for versioning. By default, all packages are private to prevent accidental publishing when users clone the template.
+A modern TypeScript monorepo using pnpm workspaces, Turborepo for build orchestration, Biome for linting/formatting, Vitest for testing, and Changesets for versioning. Nothing publishes until a repository opts in with a repository variable: `NPM_PUBLISH` for npm, `PKG_PR_NEW` for PR previews. A copy of the template publishes nothing by accident.
 
 **Tech Stack:**
 
@@ -31,7 +31,7 @@ packages/
 └── cli-example/     # Command-line package: bin entry, Node target, test that runs the built command
 ```
 
-Each package has its own `package.json`, `tsconfig.json`, and `src/` directory. All packages are currently marked as `"private": true`.
+Each package has its own `package.json`, `tsconfig.json`, and `src/` directory. Packages aren't marked private, so previews include them. Mark a package `"private": true` only if it must never be published or previewed.
 
 ## Setup Commands
 
@@ -161,6 +161,9 @@ chore: update dependencies
 - `workflows` job: zizmor (version pinned in `ZIZMOR_VERSION`, updated by Renovate) audits every workflow and fails on
   any finding. Suppress one only with an inline `# zizmor: ignore[rule]` and a comment saying why it doesn't apply
 - A new push to a PR cancels that PR's older run; runs on `main` always finish, because they release
+- `preview` job: publishes every package as an installable preview (pkg.pr.new) for pushes to main and same-repo PRs,
+  and comments the install commands on the PR. Runs only when the repository variable `PKG_PR_NEW` is `true`, never
+  for fork PRs, and uses no token: the pkg.pr.new GitHub App authenticates the run
 - **Important:** Build runs BEFORE typecheck (required for type definitions)
 
 ### Release Workflow (`.github/workflows/release.yml`)
@@ -170,7 +173,7 @@ chore: update dependencies
   with write access
 - Four jobs: select-mode → version (opens the version PR) or pack → publish
 - Publishes with npm trusted publishing (OIDC): no npm token exists; only the `publish` job has `id-token: write`
-- **By default, does nothing** because all packages are private
+- **Never publishes by default:** `pack` and `publish` run only when the repository variable `NPM_PUBLISH` is `true`
 - To enable publishing: see README "Setting Up npm Publishing" (trusted publisher on npmjs.com, `npm` environment)
 
 ## Adding a New Package
@@ -188,7 +191,6 @@ Every package keeps these, or `pnpm check:packages` fails or it publishes broken
 - `"engines": { "node": ">=24" }` for packages that run on Node, and `@types/node` 24.x if the package needs it
 - `"type": "module"` and an `exports` map whose `types` and `import` point into `dist/`
 - `"files": ["dist"]`: without it, `npm pack` follows `.gitignore` and ships no `dist/`
-- `"private": true` until you intend to publish
 - the `check:package` script (`publint --strict && attw --pack . --profile esm-only`)
 
 Then run `pnpm install` to link it, and add a `vitest.config.ts` alias and root `tsconfig.json` path if other packages import it from source.
@@ -220,18 +222,17 @@ Turborepo automatically builds dependencies in the correct order.
 3. Select packages that changed and semantic version bump
 4. Commit the changeset file
 5. On merge to main, Changesets creates a version PR
-6. Merge version PR to publish (only if packages are not private)
+6. Merge version PR to publish (only if the repository variable `NPM_PUBLISH` is `true`)
 
 ## Publishing to npm
 
-**Template ships with all packages private by default.**
+**The template never publishes until `NPM_PUBLISH` is set.**
 
-To publish a package:
+To publish:
 
-1. In `packages/your-package/package.json`:
-   - Change `"private": true` to `"private": false`
-   - Add `"publishConfig": { "access": "public" }`
-2. Ensure unique package name or use scoped name
+1. Give each package a name that's free on npm, or use a scope you own. Mark any package that must never publish
+   `"private": true`
+2. Set the repository variable `NPM_PUBLISH` to `true` (Settings → Secrets and variables → Actions → Variables)
 3. Add a trusted publisher for the package on npmjs.com (repository, workflow `ci.yml`, environment `npm`): npm checks
    the calling workflow, and `ci.yml` calls `release.yml`
 4. Release workflow will publish on next version bump; never add an `NPM_TOKEN` secret
@@ -310,7 +311,7 @@ pnpm list --depth 0  # See all workspace packages
 
 - Never commit `.env` files or secrets
 - No npm token is stored: publishing uses npm trusted publishing (OIDC), with provenance
-- All packages default to private to prevent accidental publishing
+- Publishing is off until the repository variable `NPM_PUBLISH` is `true`. Previews (`PKG_PR_NEW`) never run for fork PRs
 - Review dependencies regularly: `pnpm audit`
 - Nothing newer than 3 days installs: `minimumReleaseAge` in `pnpm-workspace.yaml` (minutes).
 - Agents never add `minimumReleaseAgeExclude` entries. A person may approve one exact version for an urgent security
@@ -341,7 +342,7 @@ Every release's notes include **Changes for existing projects**: what a project 
 ### Package Versioning
 
 Individual packages remain at `0.1.0` by default:
-- Packages are private by default (`"private": true`)
+- Packages aren't published by default (`NPM_PUBLISH` is unset)
 - Users customize package names and versions after cloning
 - Version according to [Semantic Versioning](https://semver.org/) once users start developing
 
