@@ -31,10 +31,10 @@
     },
     "test:browser": {
       "dependsOn": ["build"],
-      "cache": false,
       // example:web
-      "passThroughEnv": ["CI", "PLAYWRIGHT_*"]
+      "passThroughEnv": ["CI", "PLAYWRIGHT_*"],
       // /example:web
+      "cache": false
     },
     "size": {
       "dependsOn": ["build"]

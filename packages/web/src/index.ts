@@ -27,6 +27,7 @@ const STYLES = `
 
 export function createNotice(options: NoticeOptions): Notice {
   const host = document.createElement('div');
+  // Rename data-web after your package when you copy this example.
   host.setAttribute('data-web', '');
   const root = host.attachShadow({ mode: 'open' });
 
