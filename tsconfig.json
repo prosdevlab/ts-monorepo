@@ -10,12 +10,10 @@
     "declarationMap": true,
     "sourceMap": true,
     "paths": {
-      "@monorepo/core": ["./packages/core/src"],
-      "@monorepo/core/*": ["./packages/core/src/*"],
-      "@monorepo/utils": ["./packages/utils/src"],
-      "@monorepo/utils/*": ["./packages/utils/src/*"],
-      "@monorepo/feature-a": ["./packages/feature-a/src"],
-      "@monorepo/feature-a/*": ["./packages/feature-a/src/*"]
+      "@monorepo/shared": ["./packages/shared/src"],
+      "@monorepo/shared/*": ["./packages/shared/src/*"],
+      "@monorepo/lib": ["./packages/lib/src"],
+      "@monorepo/lib/*": ["./packages/lib/src/*"]
     }
   },
   "exclude": ["node_modules"],

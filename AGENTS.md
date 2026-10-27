@@ -24,9 +24,8 @@ A modern TypeScript monorepo using pnpm workspaces, Turborepo for build orchestr
 
 ```
 packages/
-├── core/          # Core package with tests
-├── utils/         # Utilities (depends on core)
-├── feature-a/     # Feature package (depends on core and utils)
+├── shared/        # Shared package: core service and logger, with tests
+├── lib/           # Library package (depends on shared)
 ├── browser-example/ # Browser library: ES module + script-tag build, e2e tests, size budget
 └── cli-example/     # Command-line package: bin entry, Node target, test that runs the built command
 ```
@@ -76,22 +75,21 @@ pnpm clean
 
 ```bash
 # Build a specific package
-pnpm -F "@monorepo/core" build
+pnpm -F "@monorepo/shared" build
 
 # Watch mode for development
-pnpm -F "@monorepo/core" dev
+pnpm -F "@monorepo/shared" dev
 
 # Run tests for a specific package (note: tests run from root)
-cd packages/core && pnpm test:watch
+cd packages/shared && pnpm test:watch
 ```
 
 ### Important: Build Order
 
 Packages with dependencies must be built in order. Turborepo handles this automatically, but be aware:
 
-- `@monorepo/core` has no dependencies (builds first)
-- `@monorepo/utils` depends on `@monorepo/core`
-- `@monorepo/feature-a` depends on both `@monorepo/core` and `@monorepo/utils`
+- `@monorepo/shared` has no dependencies (builds first)
+- `@monorepo/lib` depends on `@monorepo/shared`
 
 **Critical:** Always run `pnpm build` before `pnpm typecheck` because TypeScript needs the built `.d.ts` files from dependencies.
 
@@ -143,8 +141,8 @@ and audit it with [zizmor](https://docs.zizmor.sh/) (`zizmor .github/workflows`)
 type(scope): description
 
 # Examples:
-feat(core): add new authentication method
-fix(utils): resolve import path issue
+feat(shared): add new authentication method
+fix(lib): resolve import path issue
 chore: update dependencies
 ```
 
@@ -180,7 +178,7 @@ chore: update dependencies
 
 Copy the example closest to what you're building, then rename it:
 
-- `packages/core/`: a plain library (ES module and types)
+- `packages/shared/`: a plain library (ES module and types)
 - `packages/browser-example/`: a library that runs in web pages (script-tag build, browser tests, size budget)
 - `packages/cli-example/`: a command people run (`bin`, Node target, test of the built command)
 
@@ -201,7 +199,7 @@ Use workspace protocol for internal dependencies:
 
 ```json
 "dependencies": {
-  "@monorepo/core": "workspace:*"
+  "@monorepo/shared": "workspace:*"
 }
 ```
 
@@ -250,7 +248,7 @@ turbo <command>    # Run via Turborepo with caching
 ### Filtering specific packages
 
 ```bash
-pnpm -F "@monorepo/core" build
+pnpm -F "@monorepo/shared" build
 pnpm --filter "@monorepo/*" test
 ```
 
@@ -297,7 +295,7 @@ pnpm list --depth 0  # See all workspace packages
 
 **Build failures:**
 
-- Check dependency order (core → utils → feature-a)
+- Check dependency order (shared → lib)
 - Clear cache: `pnpm clean` then `pnpm build`
 - Remove node_modules: `pnpm clean && pnpm install`
 

@@ -1,5 +1,5 @@
 {
-  "name": "@monorepo/utils",
+  "name": "@monorepo/lib",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -28,7 +28,7 @@
     "check:package": "publint --strict && attw --pack . --profile esm-only"
   },
   "dependencies": {
-    "@monorepo/core": "workspace:*"
+    "@monorepo/shared": "workspace:*"
   },
   "devDependencies": {
     "typescript": "7.0.2"

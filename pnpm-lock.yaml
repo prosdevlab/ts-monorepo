@@ -248,30 +248,17 @@ importers:
         specifier: 7.0.2
         version: 7.0.2
 
-  packages/core:
+  packages/lib:
+    dependencies:
+      '@monorepo/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
       typescript:
         specifier: 7.0.2
         version: 7.0.2
 
-  packages/feature-a:
-    dependencies:
-      '@monorepo/core':
-        specifier: workspace:*
-        version: link:../core
-      '@monorepo/utils':
-        specifier: workspace:*
-        version: link:../utils
-    devDependencies:
-      typescript:
-        specifier: 7.0.2
-        version: 7.0.2
-
-  packages/utils:
-    dependencies:
-      '@monorepo/core':
-        specifier: workspace:*
-        version: link:../core
+  packages/shared:
     devDependencies:
       typescript:
         specifier: 7.0.2

@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitest/config';
 import { resolve } from 'path';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
@@ -14,9 +14,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@monorepo/core': resolve(__dirname, 'packages/core/src'),
-      '@monorepo/utils': resolve(__dirname, 'packages/utils/src'),
-      '@monorepo/feature-a': resolve(__dirname, 'packages/feature-a/src'),
+      '@monorepo/shared': resolve(__dirname, 'packages/shared/src'),
+      '@monorepo/lib': resolve(__dirname, 'packages/lib/src'),
     },
   },
 });
