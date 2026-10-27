@@ -31,6 +31,7 @@ A modern TypeScript monorepo starter template with best practices for scalable p
 - 🚀 GitHub Actions for CI/CD with npm publishing
 - 🔗 Installable preview packages for every PR ([pkg.pr.new](https://pkg.pr.new))
 - 🛡️ [zizmor](https://docs.zizmor.sh/) audits the workflows themselves on every PR
+- 🤖 Dependabot dependency updates, 3 days after release, and `pnpm audit` in CI
 - 🪝 [Husky](https://typicode.github.io/husky/) for Git hooks
 
 ## Project Structure
@@ -38,7 +39,7 @@ A modern TypeScript monorepo starter template with best practices for scalable p
 ```
 ts-monorepo-starter/
 ├── .changeset/          # Changesets configuration
-├── .github/             # Workflows, issue forms, PR template
+├── .github/             # Workflows, Dependabot config, issue forms, PR template
 ├── .husky/              # Git hooks
 ├── packages/            # All packages (the examples are listed below)
 ├── .editorconfig        # Editor defaults matching Biome's formatter
@@ -47,7 +48,6 @@ ts-monorepo-starter/
 ├── commitlint.config.js # Commitlint configuration
 ├── package.json         # Root package.json
 ├── pnpm-workspace.yaml  # PNPM workspace config (3-day minimum release age)
-├── renovate.json        # Dependency update PRs (once releases are 3 days old)
 ├── SECURITY.md          # How to report a vulnerability privately
 ├── tsconfig.json        # Base TypeScript config (Node)
 ├── turbo.json           # Turborepo config
@@ -121,19 +121,19 @@ package.json
   devEngines.runtime   node 26.12.1 ──┬──▶ pnpm: downloads it and runs every script on it
                                       ├──▶ setup-node (CI): installs the same version
                                       ├──▶ npm and npx: refuse to run on any other version
-                                      └──▶ @types/node 26.x in the root package.json (Renovate rule)
+                                      └──▶ @types/node 26.x in the root package.json (raised by hand)
   packages/*/package.json
     engines.node       >=24 ──────────┬──▶ CI: unit tests on Node 24 and 26, Linux, macOS, Windows
                                       ├──▶ tsconfig.json: @tsconfig/node24 (no newer JS APIs)
-                                      └──▶ @types/node 24.x in packages (Renovate rule)
+                                      └──▶ @types/node 24.x in packages (raised by hand)
   packageManager       pnpm@12.15.0 ──┬──▶ pnpm: switches itself to this version
                                       └──▶ pnpm/action-setup (CI)
 
 pnpm-workspace.yaml
-  minimumReleaseAge    4320 (3 days) ◀──── must equal ────▶ renovate.json "3 days"
+  minimumReleaseAge    4320 (3 days) ◀──── must equal ────▶ dependabot.yml cooldown 3
 ```
 
-Each version is set in one place, and the tools on the right read it from there. Some stay in step by other means: Renovate holds `@types/node` to the matching Node major (26 for the root's tooling, 24 for the packages), and the two age settings are kept equal by hand. The repository is developed on Node 26; the packages it publishes run on Node 24 and later.
+Each version is set in one place, and the tools on the right read it from there. Some stay in step by hand: `@types/node` stays on the matching Node major (26 for the root's tooling, 24 for the packages; Dependabot skips its major updates), and the two age settings are kept equal. The repository is developed on Node 26; the packages it publishes run on Node 24 and later.
 
 ## Getting Started
 
@@ -390,7 +390,7 @@ Every dependency is pinned to an exact version, and nothing newer than **3 days*
   younger than 3 days? ── yes ──▶ pnpm refuses it (ERR_PNPM_NO_MATURE_MATCHING_VERSION)
           │ no
           ▼
-  Renovate PR, Monday, grouped ──▶ CI runs every check ──▶ a person reviews and merges
+  Dependabot PR, Monday, grouped ──▶ CI runs every check ──▶ a person reviews and merges
 
   urgent security fix, released today
   advisory ──▶ a person approves ──▶ minimumReleaseAgeExclude: pkg@x.y.z ──▶ CI ──▶ merge
@@ -399,7 +399,9 @@ Every dependency is pinned to an exact version, and nothing newer than **3 days*
 
 - **pnpm enforces it on every install** (`minimumReleaseAge` in `pnpm-workspace.yaml`, in minutes), including transitive dependencies. `minimumReleaseAgeStrict: true` makes a version that is too new fail the install, with a message naming the setting, instead of falling back to it. pnpm 12 also rejects a misspelled setting, so a typo can't silently turn the rule off.
 - **Install scripts are opt-in** (`allowBuilds` in `pnpm-workspace.yaml`). pnpm fails the install when a dependency has a script nobody approved or denied.
-- **Renovate proposes the updates** (`renovate.json`): weekly, only once a release is 3 days old, grouped into one PR for GitHub Actions and one for dev tools. It also keeps the GitHub Actions pinned to exact commits, updates the zizmor version pinned in `ci.yml` (`ZIZMOR_VERSION`), and refreshes the lockfile weekly. Keep its `minimumReleaseAge` equal to pnpm's, or it opens PRs that pnpm refuses. It keeps `@types/node` on the matching Node major: 26.x in the root `package.json` (the pinned `devEngines.runtime`) and 24.x in packages (the oldest `engines.node`). Raise each with its Node version.
+- **Dependabot proposes the updates** (`.github/dependabot.yml`): weekly, only once a release is 3 days old (`cooldown`), with minor and patch dev-tool updates grouped into one PR and GitHub Actions into another. It keeps the GitHub Actions pinned to exact commits. Keep its `cooldown` equal to pnpm's `minimumReleaseAge`, or it opens PRs that pnpm refuses. It is built into GitHub: no app to install.
+- **Some versions are raised by hand**, because Dependabot doesn't read them: the Node version in `devEngines.runtime`, the zizmor version in `ci.yml` (`ZIZMOR_VERSION`), and `@types/node` majors. Keep `@types/node` on the matching Node major: 26.x in the root `package.json` (the pinned `devEngines.runtime`) and 24.x in packages (the oldest `engines.node`). Raise each with its Node version.
+- **CI audits every install** (`pnpm audit --audit-level high`) against the npm registry's advisories, and fails on high or critical ones.
 
 **An urgent security fix released today.** The rule allows one exact version through, never a whole package:
 
@@ -411,9 +413,7 @@ Every dependency is pinned to an exact version, and nothing newer than **3 days*
    ```
 3. Remove the entry once the version is 3 days old.
 
-With Dependabot alerts on (**Settings → Advanced Security**), Renovate opens security-fix PRs right away, outside its weekly schedule, labelled `security`. A person still adds the exception in that PR.
-
-To turn Renovate on, install the [Renovate GitHub App](https://github.com/apps/renovate) for the repository. Its first PR is an onboarding check you merge to start.
+GitHub's Dependabot alerts and security-fix PRs don't cover these dependencies yet: GitHub's dependency graph reads only the first of the two documents in pnpm 12's `pnpm-lock.yaml`, which lists pnpm itself ([dependabot-core#15904](https://github.com/dependabot/dependabot-core/issues/15904)). The `pnpm audit` step in CI is what catches a known vulnerability; run `pnpm audit` to see every advisory, at any severity.
 
 ## Versioning
 

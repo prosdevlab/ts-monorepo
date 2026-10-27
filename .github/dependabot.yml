@@ -1,0 +1,42 @@
+# Dependency update PRs, weekly, only for releases at least 3 days old (README "Dependency Updates").
+# Keep cooldown equal to minimumReleaseAge in pnpm-workspace.yaml, or Dependabot opens PRs pnpm refuses.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directories:
+      - /
+      - /packages/*
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+    cooldown:
+      default-days: 3
+    # Keep exact pins exact.
+    versioning-strategy: increase
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      dev-dependencies:
+        dependency-type: development
+        update-types: [minor, patch]
+    ignore:
+      # @types/node follows the Node major: 26 at the root (devEngines.runtime), 24 in packages (engines.node).
+      # Raise it by hand together with that Node version.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+    cooldown:
+      default-days: 3
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      github-actions:
+        patterns: ["*"]
+        update-types: [minor, patch]
