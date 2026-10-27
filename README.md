@@ -285,8 +285,7 @@ Packages can depend on each other using the workspace protocol:
 # One-time: install the browser Playwright uses
 pnpm --filter @monorepo/web exec playwright install chromium
 
-# Build, then run browser tests and the size budget
-pnpm build
+# Browser tests and the size budget (turbo builds first)
 pnpm test:browser
 pnpm size
 ```
