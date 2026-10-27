@@ -64,7 +64,7 @@ jobs:
       # Cache Playwright's browser per Playwright version, so CI downloads it once, not every run.
       - name: Get Playwright version
         id: playwright
-        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+        run: echo "version=$(pnpm --filter @monorepo/web exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
 
       - name: Cache Playwright browser
         id: playwright-cache
@@ -76,7 +76,7 @@ jobs:
       # Headless tests only need Chromium's headless shell; the runner image already has its system libraries.
       - name: Install Playwright browser
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: pnpm exec playwright install --only-shell chromium
+        run: pnpm --filter @monorepo/web exec playwright install --only-shell chromium
 
       - name: Browser tests
         run: pnpm test:browser

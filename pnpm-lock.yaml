@@ -169,9 +169,6 @@ importers:
       '@arethetypeswrong/cli':
         specifier: 0.18.5
         version: 0.18.5
-      '@axe-core/playwright':
-        specifier: 4.14.0
-        version: 4.14.0(playwright-core@1.64.1)
       '@biomejs/biome':
         specifier: 2.6.2
         version: 2.6.2
@@ -184,12 +181,6 @@ importers:
       '@commitlint/config-conventional':
         specifier: 21.2.4
         version: 21.2.4
-      '@playwright/test':
-        specifier: 1.64.1
-        version: 1.64.1
-      '@size-limit/file':
-        specifier: 14.3.0
-        version: 14.3.0(size-limit@14.3.0)
       '@tsconfig/node24':
         specifier: 24.0.5
         version: 24.0.5
@@ -214,9 +205,6 @@ importers:
       publint:
         specifier: 0.3.25
         version: 0.3.25
-      size-limit:
-        specifier: 14.3.0
-        version: 14.3.0
       turbo:
         specifier: 2.11.10
         version: 2.11.10
@@ -254,12 +242,24 @@ importers:
 
   packages/web:
     devDependencies:
+      '@axe-core/playwright':
+        specifier: 4.14.0
+        version: 4.14.0(playwright-core@1.64.1)
+      '@playwright/test':
+        specifier: 1.64.1
+        version: 1.64.1
       '@rollup/plugin-terser':
         specifier: 1.0.2
         version: 1.0.2(rollup@4.65.0)
+      '@size-limit/file':
+        specifier: 14.3.0
+        version: 14.3.0(size-limit@14.3.0)
       rollup:
         specifier: 4.65.0
         version: 4.65.0
+      size-limit:
+        specifier: 14.3.0
+        version: 14.3.0
       typescript:
         specifier: 7.0.2
         version: 7.0.2

@@ -9,12 +9,12 @@ A modern TypeScript monorepo using pnpm workspaces, Turborepo for build orchestr
 **Tech Stack:**
 
 - Package manager: pnpm 12.15.0 (pinned via `packageManager`)
-- Language: TypeScript 7.0.2, with Node 24 (`tsconfig.json`) and browser (`tsconfig.browser.json`) presets
+- Language: TypeScript 7.0.2, with a Node 24 preset (`tsconfig.json`) that the browser example overrides for the DOM
 - Build: `tsc` for every package; Rollup bundles the browser example's script-tag file
 - Build system: Turborepo
 - Linter/Formatter: Biome
-- Testing: Vitest 5 (run from root), Playwright + axe for browser packages
-- Size budgets: size-limit, per browser package
+- Testing: Vitest 5 (run from root), Playwright + axe, owned by the browser package
+- Size budgets: size-limit, owned by the browser package
 - CI/CD: GitHub Actions (separate CI and Release workflows)
 - Versioning: Changesets
 - Node.js for development: >= 26 (LTS; `devEngines.runtime` pins 26.12.1: pnpm downloads it locally, and CI reads the same version from package.json)
@@ -53,10 +53,10 @@ pnpm test
 # Watch mode for tests
 pnpm test:watch
 
-# Browser tests (Playwright; run after build; first time: pnpm exec playwright install chromium)
+# Browser tests (Playwright; run after build; first time: pnpm --filter @monorepo/web exec playwright install chromium; runs through turbo)
 pnpm test:browser
 
-# Size budgets for browser builds (run after build)
+# Size budgets for browser builds (runs through turbo, which builds first)
 pnpm size
 
 # Pack each package as it would publish and check layout and types (publint, attw)
