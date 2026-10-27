@@ -125,7 +125,7 @@ Each version is set in one place, and the tools on the right read it from there.
    ```bash
    npm install -g pnpm@12.15.0
    ```
-   pnpm 12 ships a native binary that its install script puts in place. pnpm 10 can't switch itself to 12, so upgrade it this way.
+   pnpm 10.26 or newer switches itself to pnpm 12 when you run it here, so you can skip this step. Run it on a machine with no pnpm, or with pnpm 9 or older: those refuse to install (`ERR_PNPM_UNSUPPORTED_ENGINE`). If Volta manages your pnpm, run `volta install pnpm@12.15.0` instead.
 
    Inside the repository, run one-off tools with `pnpm dlx` or `pnpm exec`. `npm` and `npx` refuse to run unless your system Node.js matches the pinned version exactly.
 
@@ -235,7 +235,7 @@ Packages publish with **npm trusted publishing**: GitHub Actions proves its iden
 
 The release workflow never publishes until the repository variable `NPM_PUBLISH` is `true`, so a copy of the template can't publish by accident. To publish:
 
-1. Give each package a name that's free on npm, or use a scope you own. Mark any package that must never publish `"private": true`.
+1. Give each package a name that's free on npm, or use a scope you own. Mark any package that must never publish `"private": true`. Add `"repository": {"type": "git", "url": "git+https://github.com/<owner>/<repo>.git", "directory": "packages/<name>"}` to each package you publish, because npm provenance checks it against the publishing repository.
 2. On npmjs.com, open the package's **Settings → Trusted publishing** and add a GitHub Actions publisher: your user or organization, this repository, workflow file `ci.yml`, environment `npm`. (Publishing runs in `release.yml`, which `ci.yml` calls, and npm checks the calling workflow.) A new trusted publisher must complete its first publish within 2 days. If npm won't let you configure a package that doesn't exist yet, publish the first version by hand (`npm publish --access public`, with two-factor authentication), then add the publisher.
 3. In the same settings, under **Publishing access**, choose **Require two-factor authentication and disallow tokens**. Trusted publishing keeps working; a leaked token can't publish.
 4. In GitHub, under **Settings → Actions → General**, enable **Allow GitHub Actions to create and approve pull requests**, so the workflow can open the version PR. Then set the repository variable `NPM_PUBLISH` to `true` (**Settings → Secrets and variables → Actions → Variables**). Optionally, add required reviewers to the `npm` environment (**Settings → Environments**) to approve each publish.
