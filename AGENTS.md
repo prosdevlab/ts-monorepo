@@ -157,7 +157,9 @@ chore: update dependencies
 
 ### Release Workflow (`.github/workflows/release.yml`)
 
-- Triggers: After CI succeeds on main branch (workflow_run)
+- Triggers: called by CI's `release` job (`workflow_call`) on pushes to main, after `build` and `compat` pass; or a
+  manual run on main. Never `workflow_run`: it also fires for fork PRs from a branch named main, running their code
+  with write access
 - Four jobs: select-mode → version (opens the version PR) or pack → publish
 - Publishes with npm trusted publishing (OIDC): no npm token exists; only the `publish` job has `id-token: write`
 - **By default, does nothing** because all packages are private
@@ -222,7 +224,8 @@ To publish a package:
    - Change `"private": true` to `"private": false`
    - Add `"publishConfig": { "access": "public" }`
 2. Ensure unique package name or use scoped name
-3. Add a trusted publisher for the package on npmjs.com (repository, `release.yml`, environment `npm`)
+3. Add a trusted publisher for the package on npmjs.com (repository, workflow `ci.yml`, environment `npm`): npm checks
+   the calling workflow, and `ci.yml` calls `release.yml`
 4. Release workflow will publish on next version bump; never add an `NPM_TOKEN` secret
 
 ## Common Patterns

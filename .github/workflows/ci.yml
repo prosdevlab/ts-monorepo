@@ -107,3 +107,14 @@ jobs:
         run: |
           node --version
           node node_modules/vitest/vitest.mjs run
+
+  # Releases only on pushes to main, after every check passes. Pull requests, including forks, never reach it.
+  # The trusted publisher on npmjs.com names this file (ci.yml): npm checks the calling workflow.
+  release:
+    needs: [build, compat]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write # version PR branch, git tags, GitHub releases
+      pull-requests: write # the version PR
+      id-token: write # npm trusted publishing (OIDC); release.yml grants it only to the publish job
+    uses: ./.github/workflows/release.yml
