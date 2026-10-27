@@ -15,8 +15,8 @@ out
 
 # Testing
 coverage
-test-results
 # example:web
+test-results
 playwright-report
 blob-report
 # /example:web

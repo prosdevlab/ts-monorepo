@@ -1,6 +1,6 @@
 // Keeps every example-specific line between that example's markers (CONTRIBUTING.md, "Example Markers").
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, realpathSync } from 'node:fs';
 import { basename, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -26,13 +26,16 @@ const MARKER = {
   slash: /^\/\/\s*(\/?)example:(\S+)$/,
 };
 
+// A comment-shaped line that mentions example: but isn't a strict marker.
+const COMMENT = /^(<!--|#|\/\/|\/\*)/;
+const LOOSE = /example\s*:/i;
+
 function styleOf(file) {
-  const relative = file;
   const ext = extname(file);
   const name = basename(file);
   if (ext === '.md') return 'html';
   if (['.yml', '.yaml'].includes(ext) || name === '.gitignore') return 'hash';
-  if (relative.startsWith('.husky/')) return 'hash';
+  if (file.startsWith('.husky/')) return 'hash';
   if (['.ts', '.mts', '.cts', '.tsx', '.js', '.mjs', '.cjs', '.jsonc'].includes(ext))
     return 'slash';
   if (/^tsconfig.*\.json$/.test(name) || name === 'turbo.json') return 'slash';
@@ -47,18 +50,21 @@ export function checkExamples(files) {
     const add = (line, message) => problems.push({ file, line, message });
     const style = styleOf(file);
     const stack = [];
-    let inFence = false;
+    let fence = null;
     for (const [index, raw] of text.split('\n').entries()) {
       const line = index + 1;
       const trimmed = raw.trim();
-      if (style === 'html' && trimmed.startsWith('```')) inFence = !inFence;
+      const fenceMark = style === 'html' && trimmed.match(/^(`{3,}|~{3,})/)?.[1][0];
+      if (fenceMark && !fence) fence = fenceMark;
+      else if (fenceMark === fence) fence = null;
+      const inFence = fence !== null;
       const found = Object.entries(MARKER).find(([, re]) => re.test(trimmed));
       if (found) {
         const [kind, re] = found;
         const [, closing, name] = trimmed.match(re);
         if (inFence) add(line, `example:${name} marker inside a code fence`);
         else if (kind !== style) add(line, 'unknown marker style');
-        else if (!(name in EXAMPLES)) add(line, `unknown example "${name}"`);
+        else if (!Object.hasOwn(EXAMPLES, name)) add(line, `unknown example "${name}"`);
         else if (closing) {
           if (stack.at(-1)?.name === name) stack.pop();
           else add(line, `example:${name} closes without a matching opening`);
@@ -68,6 +74,7 @@ export function checkExamples(files) {
         }
         continue;
       }
+      if (!inFence && COMMENT.test(trimmed) && LOOSE.test(trimmed)) add(line, 'malformed marker');
       const open = stack.at(-1)?.name;
       const lower = raw.toLowerCase();
       for (const [name, example] of Object.entries(EXAMPLES)) {
@@ -77,6 +84,44 @@ export function checkExamples(files) {
       }
     }
     for (const { name, line } of stack) add(line, `example:${name} opened here is never closed`);
+    if (style === 'slash' && extname(file) === '.json')
+      problems.push(...trailingCommas(file, text));
+  }
+  return problems;
+}
+
+// Removing any set of examples (always with template-only) must leave valid JSON behind.
+// Reports only the smallest failing sets: a superset of one fails the same way.
+function trailingCommas(file, text) {
+  const names = Object.keys(EXAMPLES).filter((name) => name !== 'template-only');
+  const problems = [];
+  const failed = [];
+  for (let mask = 0; mask < 2 ** names.length; mask++) {
+    if (failed.some((subset) => (mask & subset) === subset)) continue;
+    const removed = names.filter((_, i) => mask & (2 ** i));
+    const kept = [];
+    let skipping = null;
+    for (const [index, raw] of text.split('\n').entries()) {
+      const match = raw.trim().match(MARKER.slash);
+      if (match) {
+        const [, closing, name] = match;
+        if (!closing && !skipping && [...removed, 'template-only'].includes(name)) skipping = name;
+        else if (closing && skipping === name) skipping = null;
+        continue;
+      }
+      if (!skipping && !raw.trim().startsWith('//')) kept.push({ raw, line: index + 1 });
+    }
+    const joined = kept.map((k) => k.raw).join('\n');
+    const comma = /,(\s*[}\]])/.exec(joined);
+    if (!comma) continue;
+    failed.push(mask);
+    const before = joined.slice(0, comma.index).split('\n').length - 1;
+    const what = (removed.length ? removed : ['template-only']).map((name) => `example:${name}`);
+    problems.push({
+      file,
+      line: kept[before].line,
+      message: `removing ${what.join(', ')} leaves a trailing comma`,
+    });
   }
   return problems;
 }
@@ -98,4 +143,13 @@ function main() {
   if (problems.length) process.exit(1);
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) main();
+// realpath on both sides, so a symlinked path (macOS /tmp) still counts as a direct run.
+function isDirectRun() {
+  try {
+    return realpathSync(fileURLToPath(import.meta.url)) === realpathSync(process.argv[1] ?? '');
+  } catch {
+    return false;
+  }
+}
+
+if (isDirectRun()) main();

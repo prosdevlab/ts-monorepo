@@ -82,11 +82,11 @@ An arrow points from a package to a package that depends on it. `pnpm build` bui
 
 <!-- /example:lib -->
 <!-- example:web -->
-`web` has no internal dependencies, so it builds alongside the others.
+`web` has no internal dependencies.
 
 <!-- /example:web -->
 <!-- example:cli -->
-`cli` has no internal dependencies, so it builds alongside the others.
+`cli` has no internal dependencies.
 
 <!-- /example:cli -->
 Typecheck reads each dependency's built `dist/`, so build before typechecking.

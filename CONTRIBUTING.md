@@ -85,5 +85,7 @@ markers, and lines only this repository needs sit between `template-only` marker
 - TypeScript, JavaScript, `tsconfig*.json` and `turbo.json`: `// example:NAME` and `// /example:NAME`
 
 A line belongs to at most one example, so name one example per line. Never put markers inside fenced code blocks (split the
-block instead) or in `package.json`, which is strict JSON. Run `node scripts/check-examples.mjs` to verify; CI runs it too.
+block instead) or in `package.json`, which is strict JSON. In `tsconfig*.json` and `turbo.json`, never make a marked
+block the last property of its object: put its comma inside the block, so removing it leaves no trailing comma.
+Run `node scripts/check-examples.mjs` to verify; CI runs it too.
 <!-- /example:template-only -->

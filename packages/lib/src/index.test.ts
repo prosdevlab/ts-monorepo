@@ -6,6 +6,5 @@ describe('FeatureService', () => {
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});
     createFeature({ apiKey: 'test-key', debug: false, featureName: 'demo' }).start();
     expect(log).toHaveBeenCalledWith('[INFO] Feature demo started');
-    log.mockRestore();
   });
 });

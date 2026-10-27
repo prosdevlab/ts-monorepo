@@ -1,3 +1,8 @@
+import { execFileSync, spawnSync } from 'node:child_process';
+import { mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { checkExamples } from './check-examples.mjs';
 
@@ -77,5 +82,80 @@ describe('checkExamples', () => {
       []
     );
     expect(check({ 'a.cts': '// example:web\nplaywright\n// /example:web' })).toEqual([]);
+  });
+
+  it('rejects inherited names such as constructor and toString', () => {
+    for (const name of ['constructor', 'toString']) {
+      const readme = `<!-- example:${name} -->\n<!-- /example:${name} -->`;
+      expect(messages({ 'README.md': readme })).toContain(`unknown example "${name}"`);
+    }
+  });
+
+  it('reports a malformed marker instead of ignoring it', () => {
+    expect(messages({ 'README.md': '<!-- example: web -->' })).toEqual(['malformed marker']);
+    expect(messages({ 'a.ts': '// Example:lib' })).toEqual(['malformed marker']);
+    expect(messages({ 'ci.yml': '#example :web' })).toEqual(['malformed marker']);
+  });
+
+  it('treats ~~~ like ``` for code fences', () => {
+    expect(messages({ 'README.md': '~~~\n<!-- example:web -->\n~~~' })).toEqual([
+      'example:web marker inside a code fence',
+    ]);
+    // A ~~~ line doesn't close a ``` fence.
+    expect(messages({ 'README.md': '```\n~~~\n<!-- example:web -->\n```' })).toEqual([
+      'example:web marker inside a code fence',
+    ]);
+  });
+
+  it('reports a JSON block whose removal leaves a trailing comma', () => {
+    const last = ['{', '  "a": 1,', '  // example:lib', '  "b": 2', '  // /example:lib', '}'];
+    expect(check({ 'tsconfig.json': last.join('\n') })).toEqual([
+      { file: 'tsconfig.json', line: 2, message: 'removing example:lib leaves a trailing comma' },
+    ]);
+    const first = ['{', '  // example:web', '  "b": [2],', '  // /example:web', '  "a": 1', '}'];
+    expect(check({ 'turbo.json': first.join('\n') })).toEqual([]);
+  });
+
+  it('reports only the smallest set of removals that leaves a trailing comma', () => {
+    const json = ['{', '  "a": [1],', '  // example:web', '  "c": 3', '  // /example:web', '}'];
+    expect(messages({ 'turbo.json': json.join('\n') })).toEqual([
+      'removing example:web leaves a trailing comma',
+    ]);
+  });
+
+  it('reports a trailing comma left by removing template-only blocks', () => {
+    const json = [
+      '[',
+      '  1,',
+      '  // example:template-only',
+      '  2',
+      '  // /example:template-only',
+      ']',
+    ];
+    expect(messages({ 'tsconfig.base.json': json.join('\n') })).toEqual([
+      'removing example:template-only leaves a trailing comma',
+    ]);
+  });
+});
+
+describe('check-examples.mjs run directly', () => {
+  it('runs through a symlinked path', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'check-examples-'));
+    try {
+      const scripts = fileURLToPath(new URL('.', import.meta.url));
+      // A junction on Windows needs no extra rights; other systems ignore the type.
+      symlinkSync(scripts, join(dir, 'link'), 'junction');
+      execFileSync('git', ['init', '-q'], { cwd: dir });
+      writeFileSync(join(dir, 'README.md'), '<!-- example:web -->\n');
+      execFileSync('git', ['add', 'README.md'], { cwd: dir });
+      const run = spawnSync(process.execPath, [join(dir, 'link', 'check-examples.mjs')], {
+        cwd: dir,
+        encoding: 'utf8',
+      });
+      expect(run.stdout).toContain('README.md:1 example:web opened here is never closed');
+      expect(run.status).toBe(1);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

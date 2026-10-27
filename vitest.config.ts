@@ -1,5 +1,5 @@
 // example:lib
-import { resolve } from 'path';
+import { fileURLToPath } from 'node:url';
 // /example:lib
 import { defineConfig } from 'vitest/config';
 
@@ -7,12 +7,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: [
-      'packages/**/*.{test,spec}.ts',
-      // example:template-only
-      'scripts/**/*.test.ts',
-      // /example:template-only
-    ],
+    restoreMocks: true,
+    include: ['packages/**/*.{test,spec}.ts', 'scripts/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -22,8 +18,8 @@ export default defineConfig({
   // example:lib
   resolve: {
     alias: {
-      '@monorepo/shared': resolve(__dirname, 'packages/shared/src'),
-      '@monorepo/lib': resolve(__dirname, 'packages/lib/src'),
+      '@monorepo/shared': fileURLToPath(new URL('./packages/shared/src', import.meta.url)),
+      '@monorepo/lib': fileURLToPath(new URL('./packages/lib/src', import.meta.url)),
     },
   },
   // /example:lib
