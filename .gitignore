@@ -16,8 +16,10 @@ out
 # Testing
 coverage
 test-results
+# example:web
 playwright-report
 blob-report
+# /example:web
 
 # Debug
 npm-debug.log*

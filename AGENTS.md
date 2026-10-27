@@ -9,12 +9,17 @@ A modern TypeScript monorepo using pnpm workspaces, Turborepo for build orchestr
 **Tech Stack:**
 
 - Package manager: pnpm 12.15.0 (pinned via `packageManager`)
-- Language: TypeScript 7.0.2, with a Node 24 preset (`tsconfig.json`) that the browser example overrides for the DOM
-- Build: `tsc` for every package; Rollup bundles the browser example's script-tag file
+- Language: TypeScript 7.0.2, with a Node 24 preset (`tsconfig.json`)
+- Build: `tsc` for every package
+<!-- example:web -->
+- Browser package: overrides the Node preset for the DOM; Rollup bundles its script-tag file
+<!-- /example:web -->
 - Build system: Turborepo
 - Linter/Formatter: Biome
-- Testing: Vitest 5 (run from root), Playwright + axe, owned by the browser package
-- Size budgets: size-limit, owned by the browser package
+- Testing: Vitest 5 (run from root)
+<!-- example:web -->
+- Browser tests: Playwright + axe; size budgets: size-limit; both owned by the browser package
+<!-- /example:web -->
 - CI/CD: GitHub Actions (separate CI and Release workflows)
 - Versioning: Changesets
 - Node.js for development: >= 26 (LTS; `devEngines.runtime` pins 26.12.1: pnpm downloads it locally, and CI reads the same version from package.json)
@@ -22,13 +27,18 @@ A modern TypeScript monorepo using pnpm workspaces, Turborepo for build orchestr
 
 ## Repository Structure
 
-```
-packages/
-├── shared/        # Shared package: core service and logger, with tests
-├── lib/           # Library package (depends on shared)
-├── web/           # Browser library: ES module + script-tag build, e2e tests, size budget
-└── cli/           # Command-line package: bin entry, Node target, test that runs the built command
-```
+`packages/` holds the example packages:
+
+<!-- example:lib -->
+- `packages/shared`: core service and logger, with tests
+- `packages/lib`: a library package that depends on shared
+<!-- /example:lib -->
+<!-- example:web -->
+- `packages/web`: a browser library with an ES module and script-tag build, e2e tests and a size budget
+<!-- /example:web -->
+<!-- example:cli -->
+- `packages/cli`: a command-line package with a bin entry, a Node target and a test that runs the built command
+<!-- /example:cli -->
 
 Each package has its own `package.json`, `tsconfig.json`, and `src/` directory. Packages aren't marked private, so previews include them. Mark a package `"private": true` only if it must never be published or previewed.
 
@@ -52,13 +62,19 @@ pnpm test
 
 # Watch mode for tests
 pnpm test:watch
+```
 
+<!-- example:web -->
+```bash
 # Browser tests (Playwright; runs through turbo, which builds first; first time: pnpm --filter @monorepo/web exec playwright install chromium)
 pnpm test:browser
 
 # Size budgets for browser builds (runs through turbo, which builds first)
 pnpm size
+```
+<!-- /example:web -->
 
+```bash
 # Pack each package as it would publish and check layout and types (publint, attw)
 pnpm check:packages
 
@@ -75,21 +91,23 @@ pnpm clean
 
 ```bash
 # Build a specific package
-pnpm -F "@monorepo/shared" build
+pnpm -F "<package-name>" build
 
 # Watch mode for development
-pnpm -F "@monorepo/shared" dev
+pnpm -F "<package-name>" dev
 
 # Run tests for a specific package (note: tests run from root)
-cd packages/shared && pnpm test:watch
+cd packages/<name> && pnpm test:watch
 ```
 
 ### Important: Build Order
 
+<!-- example:lib -->
 Packages with dependencies must be built in order. Turborepo handles this automatically, but be aware:
 
 - `@monorepo/shared` has no dependencies (builds first)
 - `@monorepo/lib` depends on `@monorepo/shared`
+<!-- /example:lib -->
 
 **Critical:** Always run `pnpm build` before `pnpm typecheck` because TypeScript needs the built `.d.ts` files from dependencies.
 
@@ -100,7 +118,10 @@ Tests use Vitest with a centralized configuration at the root (`vitest.config.ts
 - Test files: `**/*.test.ts` or `**/*.spec.ts` in `packages/*/src/`
 - Run from root: `pnpm test` (NOT `turbo test`)
 - The test script in root package.json runs `vitest run`, not `turbo test`
-- Unit tests live next to source (`packages/*/src/*.test.ts`); `packages/cli/test/bin.test.ts` runs the *built* command, so `pnpm build` must run before `pnpm test`
+- Unit tests live next to source (`packages/*/src/*.test.ts`)
+<!-- example:cli -->
+- `packages/cli/test/bin.test.ts` runs the *built* command, so `pnpm build` must run before `pnpm test`
+<!-- /example:cli -->
 
 **When adding tests:**
 
@@ -123,6 +144,10 @@ pnpm size
 pnpm check:packages
 pnpm test:browser
 ```
+
+<!-- example:template-only -->
+In the template repository, CI also runs `node scripts/check-examples.mjs` after lint.
+<!-- /example:template-only -->
 
 A partial run is not done. If you changed a workflow, also lint it with [actionlint](https://github.com/rhysd/actionlint)
 and audit it with [zizmor](https://docs.zizmor.sh/) (`zizmor .github/workflows`); CI fails on any zizmor finding.
@@ -152,7 +177,13 @@ chore: update dependencies
 
 - Triggers: Push to main OR Pull Request to main
 - Node version: read from `package.json` (`devEngines.runtime` pins 26.12.1)
-- Steps: Install → Lint → Build → Typecheck → Test → Size budget → Package checks → Browser tests
+- Steps: Install → Lint → Unused code → Build → Typecheck → Test → Package checks
+<!-- example:web -->
+- Web steps: Size budget and Browser tests
+<!-- /example:web -->
+<!-- example:template-only -->
+- Template-only step: `node scripts/check-examples.mjs` after Lint keeps every example's lines between markers
+<!-- /example:template-only -->
 - `compat` job: build, then the unit tests on Node 24 and 26 × Linux, macOS, Windows. It calls Vitest with `node` directly,
   because pnpm would run it on the pinned Node 26
 - Least-privilege `permissions`; every action pinned to a commit SHA with the version in a comment
@@ -178,9 +209,15 @@ chore: update dependencies
 
 Copy the example closest to what you're building, then rename it:
 
+<!-- example:lib -->
 - `packages/shared/`: a plain library (ES module and types)
+<!-- /example:lib -->
+<!-- example:web -->
 - `packages/web/`: a library that runs in web pages (script-tag build, browser tests, size budget)
+<!-- /example:web -->
+<!-- example:cli -->
 - `packages/cli/`: a command people run (`bin`, Node target, test of the built command)
+<!-- /example:cli -->
 
 Every package keeps these, or `pnpm check:packages` fails or it publishes broken:
 
@@ -199,7 +236,7 @@ Use workspace protocol for internal dependencies:
 
 ```json
 "dependencies": {
-  "@monorepo/shared": "workspace:*"
+  "@monorepo/<package>": "workspace:*"
 }
 ```
 
@@ -248,7 +285,7 @@ turbo <command>    # Run via Turborepo with caching
 ### Filtering specific packages
 
 ```bash
-pnpm -F "@monorepo/shared" build
+pnpm -F "<package-name>" build
 pnpm --filter "@monorepo/*" test
 ```
 
@@ -295,7 +332,7 @@ pnpm list --depth 0  # See all workspace packages
 
 **Build failures:**
 
-- Check dependency order (shared → lib)
+- Check dependency order (dependencies build first)
 - Clear cache: `pnpm clean` then `pnpm build`
 - Remove node_modules: `pnpm clean && pnpm install`
 

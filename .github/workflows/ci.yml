@@ -41,6 +41,12 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      # example:template-only
+      # Keeps every example's lines between its markers, so an example can be removed cleanly.
+      - name: Check examples
+        run: node scripts/check-examples.mjs
+      # /example:template-only
+
       # Unused files, exports and dependencies, and dependencies used but not declared (knip).
       - name: Unused code
         run: pnpm check:unused
@@ -54,13 +60,16 @@ jobs:
       - name: Test
         run: pnpm test
 
+      # example:web
       - name: Size budget
         run: pnpm size
+      # /example:web
 
       # Packs each package the way it would publish, then checks its layout (publint) and type resolution (attw).
       - name: Package checks
         run: pnpm check:packages
 
+      # example:web
       # Cache Playwright's browser per Playwright version, so CI downloads it once, not every run.
       - name: Get Playwright version
         id: playwright
@@ -80,6 +89,7 @@ jobs:
 
       - name: Browser tests
         run: pnpm test:browser
+      # /example:web
 
   # Runs the unit tests on every Node.js major the packages support (engines.node), on Linux, macOS and Windows.
   compat:
