@@ -216,14 +216,14 @@ Packages publish with **npm trusted publishing**: GitHub Actions proves its iden
 By default, all packages are `"private": true`, so the release workflow does nothing. To publish a package:
 
 1. In its `package.json`, set `"private": false` and add `"publishConfig": { "access": "public" }`. Use a name that's free on npm, or a scope you own.
-2. On npmjs.com, open the package's **Settings → Trusted publishing** and add a GitHub Actions publisher: your user or organization, this repository, workflow file `release.yml`, environment `npm`. A new trusted publisher must complete its first publish within 2 days. If npm won't let you configure a package that doesn't exist yet, publish the first version by hand (`npm publish --access public`, with two-factor authentication), then add the publisher.
+2. On npmjs.com, open the package's **Settings → Trusted publishing** and add a GitHub Actions publisher: your user or organization, this repository, workflow file `ci.yml`, environment `npm`. (Publishing runs in `release.yml`, which `ci.yml` calls, and npm checks the calling workflow.) A new trusted publisher must complete its first publish within 2 days. If npm won't let you configure a package that doesn't exist yet, publish the first version by hand (`npm publish --access public`, with two-factor authentication), then add the publisher.
 3. In the same settings, under **Publishing access**, choose **Require two-factor authentication and disallow tokens**. Trusted publishing keeps working; a leaked token can't publish.
 4. In GitHub, under **Settings → Actions → General**, enable **Allow GitHub Actions to create and approve pull requests**, so the workflow can open the version PR. Optionally, add required reviewers to the `npm` environment (**Settings → Environments**) to approve each publish.
 
-How a release runs (`.github/workflows/release.yml`), after CI passes on `main`, against the exact commit CI tested:
+How a release runs: CI's `release` job calls `.github/workflows/release.yml` on pushes to `main`, after every other CI job passes, against the same commit. Pull requests never reach it, so code from a fork never runs with write access.
 
 ```
-  merge to main ──▶ CI passes ──▶ select-mode                    contents: read
+  push to main ──▶ CI jobs pass ──▶ select-mode                  contents: read
                                        │
                  ┌─────────────────────┴──────────────────────┐
          changesets present                          version PR merged
