@@ -1,4 +1,4 @@
-// Keeps every example-specific line between that example's markers (see CONTRIBUTING.md).
+// Keeps every example-specific line between that example's markers (CONTRIBUTING.md, "Example Markers").
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { basename, extname } from 'node:path';
@@ -27,11 +27,14 @@ const MARKER = {
 };
 
 function styleOf(file) {
+  const relative = file;
   const ext = extname(file);
   const name = basename(file);
   if (ext === '.md') return 'html';
   if (['.yml', '.yaml'].includes(ext) || name === '.gitignore') return 'hash';
-  if (['.ts', '.mts', '.js', '.mjs'].includes(ext)) return 'slash';
+  if (relative.startsWith('.husky/')) return 'hash';
+  if (['.ts', '.mts', '.cts', '.tsx', '.js', '.mjs', '.cjs', '.jsonc'].includes(ext))
+    return 'slash';
   if (/^tsconfig.*\.json$/.test(name) || name === 'turbo.json') return 'slash';
   return null;
 }
@@ -44,14 +47,17 @@ export function checkExamples(files) {
     const add = (line, message) => problems.push({ file, line, message });
     const style = styleOf(file);
     const stack = [];
+    let inFence = false;
     for (const [index, raw] of text.split('\n').entries()) {
       const line = index + 1;
       const trimmed = raw.trim();
+      if (style === 'html' && trimmed.startsWith('```')) inFence = !inFence;
       const found = Object.entries(MARKER).find(([, re]) => re.test(trimmed));
       if (found) {
         const [kind, re] = found;
         const [, closing, name] = trimmed.match(re);
-        if (kind !== style) add(line, 'unknown marker style');
+        if (inFence) add(line, `example:${name} marker inside a code fence`);
+        else if (kind !== style) add(line, 'unknown marker style');
         else if (!(name in EXAMPLES)) add(line, `unknown example "${name}"`);
         else if (closing) {
           if (stack.at(-1)?.name === name) stack.pop();
@@ -63,9 +69,10 @@ export function checkExamples(files) {
         continue;
       }
       const open = stack.at(-1)?.name;
+      const lower = raw.toLowerCase();
       for (const [name, example] of Object.entries(EXAMPLES)) {
         if (name === open || example.folders.some((folder) => file.startsWith(folder))) continue;
-        const hit = example.identifiers.find((id) => raw.includes(id));
+        const hit = example.identifiers.find((id) => lower.includes(id.toLowerCase()));
         if (hit) add(line, `${hit} appears outside example:${name} markers`);
       }
     }

@@ -29,15 +29,15 @@
       "dependsOn": ["build"],
       "outputs": []
     },
-    // example:web
     "test:browser": {
       "dependsOn": ["build"],
       "cache": false,
+      // example:web
       "passThroughEnv": ["CI", "PLAYWRIGHT_*"]
+      // /example:web
     },
     "size": {
       "dependsOn": ["build"]
     }
-    // /example:web
   }
 }

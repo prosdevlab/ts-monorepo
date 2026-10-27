@@ -60,16 +60,14 @@ jobs:
       - name: Test
         run: pnpm test
 
-      # example:web
-      - name: Size budget
-        run: pnpm size
-      # /example:web
-
       # Packs each package the way it would publish, then checks its layout (publint) and type resolution (attw).
       - name: Package checks
         run: pnpm check:packages
 
       # example:web
+      - name: Size budget
+        run: pnpm size
+
       # Cache Playwright's browser per Playwright version, so CI downloads it once, not every run.
       - name: Get Playwright version
         id: playwright

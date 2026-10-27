@@ -24,7 +24,9 @@ describe('checkExamples', () => {
   it('reports a nested marker', () => {
     const readme =
       '<!-- example:web -->\n<!-- example:cli -->\n<!-- /example:cli -->\n<!-- /example:web -->';
-    expect(messages({ 'README.md': readme })).toContain('example:cli opens inside example:web');
+    expect(check({ 'README.md': readme })).toEqual([
+      { file: 'README.md', line: 2, message: 'example:cli opens inside example:web' },
+    ]);
   });
 
   it('reports an unknown name', () => {
@@ -46,5 +48,34 @@ describe('checkExamples', () => {
     expect(messages({ 'ci.yml': '<!-- example:web -->\n<!-- /example:web -->' })).toContain(
       'unknown marker style'
     );
+  });
+
+  it('reports a closing marker without an opening', () => {
+    expect(check({ 'README.md': 'text\n<!-- /example:web -->' })).toEqual([
+      { file: 'README.md', line: 2, message: 'example:web closes without a matching opening' },
+    ]);
+  });
+
+  it('reports a marker inside a code fence', () => {
+    const readme = '```\n<!-- example:web -->\n```';
+    expect(messages({ 'README.md': readme })).toEqual(['example:web marker inside a code fence']);
+  });
+
+  it('matches identifiers case-insensitively', () => {
+    expect(messages({ 'README.md': 'Uses Playwright.' })).toEqual([
+      'playwright appears outside example:web markers',
+    ]);
+  });
+
+  it('accepts CRLF line endings', () => {
+    const readme = '<!-- example:web -->\r\nSee packages/web.\r\n<!-- /example:web -->\r\n';
+    expect(check({ 'README.md': readme })).toEqual([]);
+  });
+
+  it('knows the comment style of .husky hooks and .cts files', () => {
+    expect(check({ '.husky/pre-push': '# example:web\nrun playwright\n# /example:web' })).toEqual(
+      []
+    );
+    expect(check({ 'a.cts': '// example:web\nplaywright\n// /example:web' })).toEqual([]);
   });
 });
