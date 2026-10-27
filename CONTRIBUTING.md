@@ -1,4 +1,4 @@
-# Contributing to TS Monorepo
+# Contributing to TypeScript Monorepo Starter
 
 Thank you for considering contributing to our TypeScript monorepo! This document outlines the process for contributing and the standards we follow.
 
