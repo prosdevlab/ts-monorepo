@@ -12,7 +12,8 @@ A modern TypeScript monorepo starter template with best practices for scalable p
 - 🏎️ [Turborepo](https://turbo.build/repo) for high-performance build system
 - 🛠️ The TypeScript compiler (`tsc`) builds every package; [Rollup](https://rollupjs.org/) builds the script-tag file
 - 🔍 [Biome](https://biomejs.dev/) for fast linting and formatting
-- ⚙️ [TypeScript](https://www.typescriptlang.org/) 7, with Node 26 and browser presets
+- ⚙️ [TypeScript](https://www.typescriptlang.org/) 7, with Node and browser presets
+- 🟢 Published packages support Node.js 24 and later, tested on Linux, macOS and Windows
 - 🧪 [Vitest](https://vitest.dev/) for unit testing
 - 🌐 [Playwright](https://playwright.dev/) browser tests with [axe](https://github.com/dequelabs/axe-core-npm) accessibility checks
 - 📏 [size-limit](https://github.com/ai/size-limit) budgets that fail CI when a browser build grows
@@ -76,7 +77,7 @@ browser-example, one more step
   dist/index.js ──── Rollup + terser ────▶ dist/index.global.js  (minified, window.BrowserExample)
 
 cli-example, one more step
-  dist/cli.js ─────── chmod +x ──────────▶ executable command (keeps #!/usr/bin/env node)
+  dist/cli.js ─────── mark executable ───▶ command (keeps #!/usr/bin/env node)
 ```
 
 ### Where versions come from
@@ -86,7 +87,11 @@ package.json
   devEngines.runtime   node 26.12.1 ──┬──▶ pnpm: downloads it and runs every script on it
                                       ├──▶ setup-node (CI): installs the same version
                                       ├──▶ npm and npx: refuse to run on any other version
-                                      └──▶ @types/node 26.x: same major (Renovate rule)
+                                      └──▶ @types/node 26.x in the root package.json (Renovate rule)
+  packages/*/package.json
+    engines.node       >=24 ──────────┬──▶ CI: unit tests on Node 24 and 26, Linux, macOS, Windows
+                                      ├──▶ tsconfig.json: @tsconfig/node24 (no newer JS APIs)
+                                      └──▶ @types/node 24.x in packages (Renovate rule)
   packageManager       pnpm@12.15.0 ──┬──▶ pnpm: switches itself to this version
                                       └──▶ pnpm/action-setup (CI)
 
@@ -94,7 +99,7 @@ pnpm-workspace.yaml
   minimumReleaseAge    4320 (3 days) ◀──── must equal ────▶ renovate.json "3 days"
 ```
 
-Each version is set in one place, and the tools on the right read it from there. Two pairs stay in step by other means: Renovate holds `@types/node` to the pinned Node major, and the two age settings are kept equal by hand.
+Each version is set in one place, and the tools on the right read it from there. Some stay in step by other means: Renovate holds `@types/node` to the matching Node major (26 for the root's tooling, 24 for the packages), and the two age settings are kept equal by hand. The repository is developed on Node 26; the packages it publishes run on Node 24 and later.
 
 ## Getting Started
 
@@ -274,8 +279,8 @@ pnpm size
 
 `packages/cli-example` shows the setup for a package people run as a command (`npx your-tool`). Copy it as a starting point.
 
-- **A `bin` entry** in `package.json` points at `dist/cli.js`. The source starts with `#!/usr/bin/env node`; `tsc` keeps that line, and the build script marks the file executable (`chmod +x`).
-- **Node 26 target**: the root `tsconfig.json` extends `@tsconfig/node26`, and `engines.node` is `>=26`.
+- **A `bin` entry** in `package.json` points at `dist/cli.js`. The source starts with `#!/usr/bin/env node`; `tsc` keeps that line, and the build script marks the file executable (with Node's `fs.chmodSync`, so it also builds on Windows).
+- **Runs on Node 24 and later**: `engines.node` is `>=24`, the root `tsconfig.json` extends `@tsconfig/node24` so code can't use newer JavaScript APIs, and the package's `@types/node` is 24.x so it can't use newer Node APIs. CI runs the tests on Node 24 and 26.
 - **Logic separate from the process.** `src/index.ts` exports `run(argv, io)`, which returns an exit code instead of exiting, so it is unit-tested directly. `src/cli.ts` is the two-line entry point that calls it.
 - **No argument-parsing dependency:** Node's built-in `util.parseArgs`, with unknown options reported as errors (exit 2) instead of crashes.
 - **A test of the built command** (`test/bin.test.ts`) runs `dist/cli.js` the way a user would: shebang, executable bit, output, exit codes. It fails with a clear message if you haven't built first.
@@ -315,7 +320,7 @@ Every dependency is pinned to an exact version, and nothing newer than **3 days*
 
 - **pnpm enforces it on every install** (`minimumReleaseAge` in `pnpm-workspace.yaml`, in minutes), including transitive dependencies. `minimumReleaseAgeStrict: true` makes a version that is too new fail the install, with a message naming the setting, instead of falling back to it. pnpm 12 also rejects a misspelled setting, so a typo can't silently turn the rule off.
 - **Install scripts are opt-in** (`allowBuilds` in `pnpm-workspace.yaml`). pnpm fails the install when a dependency has a script nobody approved or denied.
-- **Renovate proposes the updates** (`renovate.json`): weekly, only once a release is 3 days old, grouped into one PR for GitHub Actions and one for dev tools. It also keeps the GitHub Actions pinned to exact commits and refreshes the lockfile weekly. Keep its `minimumReleaseAge` equal to pnpm's, or it opens PRs that pnpm refuses. It keeps `@types/node` on the Node major that `devEngines.runtime` pins; raise both together.
+- **Renovate proposes the updates** (`renovate.json`): weekly, only once a release is 3 days old, grouped into one PR for GitHub Actions and one for dev tools. It also keeps the GitHub Actions pinned to exact commits and refreshes the lockfile weekly. Keep its `minimumReleaseAge` equal to pnpm's, or it opens PRs that pnpm refuses. It keeps `@types/node` on the matching Node major: 26.x in the root `package.json` (the pinned `devEngines.runtime`) and 24.x in packages (the oldest `engines.node`). Raise each with its Node version.
 
 **An urgent security fix released today.** The rule allows one exact version through, never a whole package:
 

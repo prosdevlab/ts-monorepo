@@ -17,19 +17,19 @@
     "dist"
   ],
   "engines": {
-    "node": ">=26"
+    "node": ">=24"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.json && chmod +x dist/cli.js",
+    "build": "pnpm run clean && tsc -p tsconfig.json && node -e \"fs.chmodSync('dist/cli.js', 0o755)\"",
     "dev": "tsc -p tsconfig.json --watch",
-    "clean": "rm -rf dist",
+    "clean": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
     "typecheck": "tsc --noEmit",
     "lint": "biome lint ./src ./test",
     "format": "biome format --write ./src ./test",
     "check:package": "publint --strict && attw --pack . --profile esm-only"
   },
   "devDependencies": {
-    "@types/node": "26.6.5",
+    "@types/node": "24.19.2",
     "typescript": "7.0.2"
   }
 }

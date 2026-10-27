@@ -14,10 +14,13 @@
   "files": [
     "dist"
   ],
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.json",
+    "build": "pnpm run clean && tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
-    "clean": "rm -rf dist",
+    "clean": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
     "typecheck": "tsc --noEmit",
     "lint": "biome lint ./src",
     "format": "biome format --write ./src",

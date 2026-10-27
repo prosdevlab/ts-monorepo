@@ -28,9 +28,16 @@
       "groupName": "dev dependencies"
     },
     {
-      "description": "Keep @types/node on the Node major that devEngines.runtime pins; raise both together",
+      "description": "Root tooling: keep @types/node on the Node major that devEngines.runtime pins; raise both together",
       "matchPackageNames": ["@types/node"],
+      "matchFileNames": ["package.json"],
       "allowedVersions": "26.x"
+    },
+    {
+      "description": "Published packages: keep @types/node on the oldest Node major they support (engines.node); raise both together",
+      "matchPackageNames": ["@types/node"],
+      "matchFileNames": ["packages/**"],
+      "allowedVersions": "24.x"
     }
   ]
 }

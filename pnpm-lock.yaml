@@ -190,9 +190,9 @@ importers:
       '@size-limit/file':
         specifier: 14.3.0
         version: 14.3.0(size-limit@14.3.0)
-      '@tsconfig/node26':
-        specifier: 26.0.1
-        version: 26.0.1
+      '@tsconfig/node24':
+        specifier: 24.0.5
+        version: 24.0.5
       '@types/node':
         specifier: 26.6.5
         version: 26.6.5
@@ -236,8 +236,8 @@ importers:
   packages/cli-example:
     devDependencies:
       '@types/node':
-        specifier: 26.6.5
-        version: 26.6.5
+        specifier: 24.19.2
+        version: 24.19.2
       typescript:
         specifier: 7.0.2
         version: 7.0.2
@@ -1020,8 +1020,8 @@ packages:
     peerDependencies:
       size-limit: 14.3.0
 
-  '@tsconfig/node26@26.0.1':
-    resolution: {integrity: sha512-NQT8JUFDKeAIWpR1dakeF534msQAsoSLr1WpKdRDt3sCvk2fsFK3EVKUBG5xKYVamiRO6yTfniiyvCaqOGgn/g==}
+  '@tsconfig/node24@24.0.5':
+    resolution: {integrity: sha512-DWC54fGPuhZgg3Ighg4Y/A/bA3ZdB5hnzAuv/MkQ/X85sVsBsMQxu8t7khutdYeiNksBbFdDyeqv1HSW2Zl8aA==}
 
   '@turbo/darwin-64@2.11.10':
     resolution: {integrity: sha512-By4idRap5+nLnMuRzLB4qkOPRlvNdyY1ne4VJYDyUoUB11H94k7uif9mbe3JT8JSNXs1D68uMcBj6hJ/jMQRvA==}
@@ -1061,6 +1061,9 @@ packages:
 
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
+
+  '@types/node@24.19.2':
+    resolution: {integrity: sha512-93d49wCWJkCyN87MxLpNN6KXPCwFw7bVUg79mGUV1OS40JGWwVCr8n61DXCSqz7CV6/VfPkb7xec7uP2M+QHWQ==}
 
   '@types/node@26.6.5':
     resolution: {integrity: sha512-uMzsv9stDdofIZBx4UGh4Z9ZgXnGC9seRDscilBcTHAeOFk67MZg/k9bWVfO+bk4qZmG+l52hRnLwUiH2LnJTg==}
@@ -1954,6 +1957,9 @@ packages:
     engines: {node: '>=16.20.0'}
     hasBin: true
 
+  undici-types@7.24.6:
+    resolution: {integrity: sha512-WRNW+sJgj5OBN4/0JpHFqtqzhpbnV0GuB+OozA9gCL7a993SmU+1JBZCzLNxYsbMfIeDL+lTsphD5jN5N+n0zg==}
+
   undici-types@8.9.0:
     resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
 
@@ -2696,7 +2702,7 @@ snapshots:
     dependencies:
       size-limit: 14.3.0
 
-  '@tsconfig/node26@26.0.1': {}
+  '@tsconfig/node24@24.0.5': {}
 
   '@turbo/darwin-64@2.11.10':
     optional: true
@@ -2724,6 +2730,10 @@ snapshots:
   '@types/deep-eql@4.0.2': {}
 
   '@types/estree@1.0.9': {}
+
+  '@types/node@24.19.2':
+    dependencies:
+      undici-types: 7.24.6
 
   '@types/node@26.6.5':
     dependencies:
@@ -3407,6 +3417,8 @@ snapshots:
       '@typescript/typescript-sunos-x64': 7.0.2
       '@typescript/typescript-win32-arm64': 7.0.2
       '@typescript/typescript-win32-x64': 7.0.2
+
+  undici-types@7.24.6: {}
 
   undici-types@8.9.0: {}
 
