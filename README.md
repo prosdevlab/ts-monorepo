@@ -144,6 +144,16 @@ Each version is set in one place, and the tools on the right read it from there.
 
 ### Installation
 
+<!-- example:template-only -->
+The quickest way to start is [create-ts-monorepo-starter](https://github.com/prosdevlab/create-ts-monorepo-starter). It asks for a folder, a package scope and the examples to keep, then installs dependencies and makes the first commit:
+
+```bash
+npm create ts-monorepo-starter@latest my-project
+```
+
+It needs Node.js 22.13 or later, and works without pnpm installed. To set up a copy by hand instead:
+
+<!-- /example:template-only -->
 1. Clone this repository
    ```bash
    git clone https://github.com/yourusername/ts-monorepo-starter.git
