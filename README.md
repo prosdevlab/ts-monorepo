@@ -151,7 +151,7 @@ The quickest way to start is [create-ts-monorepo-starter](https://github.com/pro
 npm create ts-monorepo-starter@latest my-project
 ```
 
-It needs Node.js 22.13 or later, and works without pnpm installed. To set up a copy by hand instead:
+The CLI needs Node.js 22.13 or later. If pnpm isn't installed, it fetches pnpm for that first install, but you need pnpm 12 to work in the project afterwards (step 2 below). To set up a copy by hand instead:
 
 <!-- /example:template-only -->
 1. Clone this repository
